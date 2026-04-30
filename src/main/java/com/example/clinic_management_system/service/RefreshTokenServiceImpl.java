@@ -11,6 +11,7 @@ import com.example.clinic_management_system.security.JwtTokenUtil;
 import com.example.clinic_management_system.security.TokenPayload;
 import com.example.clinic_management_system.utils.TokenConstants;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +49,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
         // 2. Tạo mã refresh token
         refreshTokenRepository.save(RefreshToken.builder()
-                        .refreshToken(passwordEncoder.encode(refreshToken))
+                        .refreshToken(DigestUtils.sha256Hex(refreshToken))
                         .userAgent(userAgent)
                         .ipAddress(ipAddress)
                         .expiredAt(Instant.now().plus(Duration.ofSeconds(TokenConstants.REFRESH_TOKEN_EXPIRATION)))

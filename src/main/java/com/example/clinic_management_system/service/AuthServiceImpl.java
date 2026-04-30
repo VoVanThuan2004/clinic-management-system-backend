@@ -1,9 +1,11 @@
 package com.example.clinic_management_system.service;
+import com.example.clinic_management_system.dto.request.ChangePasswordRequest;
 import com.example.clinic_management_system.dto.request.LoginRequest;
 import com.example.clinic_management_system.dto.request.LogoutRequest;
 import com.example.clinic_management_system.dto.response.LoginResponse;
 import com.example.clinic_management_system.entity.User;
 import com.example.clinic_management_system.exception.BadRequestException;
+import com.example.clinic_management_system.exception.ResourceNotFoundException;
 import com.example.clinic_management_system.repository.RefreshTokenRepository;
 import com.example.clinic_management_system.repository.UserRepository;
 import com.example.clinic_management_system.security.JwtTokenUtil;
@@ -12,6 +14,8 @@ import com.example.clinic_management_system.utils.TokenConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.codec.cli.Digest;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,8 +34,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest loginRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
-        System.out.println("MK: " + loginRequest.getPassword());
-
         Optional<User> user = userRepository.findByEmail(loginRequest.getEmail());
         if (user.isEmpty()) {
             throw new BadRequestException("Email không hợp lệ");
@@ -70,7 +72,7 @@ public class AuthServiceImpl implements AuthService {
 
 
         // Set refresh token vào cookie response
-//        addRefreshTokenCookie(httpServletResponse, refreshToken);
+        addRefreshTokenCookie(httpServletResponse, refreshToken);
 
         return LoginResponse.builder()
                 .userId(user.get().getUserId())
@@ -99,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
                 .secure(false)
                 .path("/")
                 .maxAge(0)  // set maxAge=0 để xóa cookie
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
 
         response.setHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
@@ -112,7 +114,33 @@ public class AuthServiceImpl implements AuthService {
         TokenPayload tokenPayload = jwtTokenUtil.getTokenPayload(refreshToken);
 
         // 3. Xóa refresh token
-        refreshTokenService.deleteRefreshTokenForUser(tokenPayload.getUserId(), passwordEncoder.encode(refreshToken));
+        refreshTokenService.deleteRefreshTokenForUser(tokenPayload.getUserId(), DigestUtils.sha256Hex(refreshToken));
+    }
+
+    @Override
+    public void changePassword(String userId, ChangePasswordRequest changePasswordRequest) {
+        if (userId == null || userId.isEmpty()) {
+            throw new BadRequestException("Vui lòng đăng nhập tài khoản");
+        }
+
+        // Kiểm tra mật khẩu hiện tại có khác mật khẩu mới
+        if (changePasswordRequest.getOldPassword().equals(changePasswordRequest.getNewPassword())) {
+            throw new BadRequestException("Mật khẩu mới đang trùng với mật khẩu hiện tại");
+        }
+
+        // So sánh mật khẩu mới có khớp với mật khẩu xác nhận
+        if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmNewPassword())) {
+            throw new BadRequestException("Mật khẩu mới và mật khẩu xác nhận không khớp");
+        }
+
+        // Set new password cho user
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            throw new ResourceNotFoundException("Người dùng không tồn tại");
+        }
+
+        user.get().setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+        userRepository.save(user.get());
     }
 
     private String getClientIp(HttpServletRequest request) {
@@ -128,7 +156,7 @@ public class AuthServiceImpl implements AuthService {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(false)
-                .sameSite("Strict") // hoặc Lax nếu cần
+                .sameSite("Lax")
                 .path("/")
                 .maxAge(TokenConstants.REFRESH_TOKEN_EXPIRATION)
                 .build();

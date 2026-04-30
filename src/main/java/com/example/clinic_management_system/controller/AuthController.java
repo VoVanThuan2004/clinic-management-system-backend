@@ -1,15 +1,18 @@
 package com.example.clinic_management_system.controller;
 
+import com.example.clinic_management_system.dto.request.ChangePasswordRequest;
 import com.example.clinic_management_system.dto.request.LoginRequest;
 import com.example.clinic_management_system.dto.request.LogoutRequest;
 import com.example.clinic_management_system.dto.response.ApiResponse;
 import com.example.clinic_management_system.dto.response.LoginResponse;
+import com.example.clinic_management_system.security.CustomUserDetail;
 import com.example.clinic_management_system.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -49,7 +52,7 @@ public class AuthController {
 
     @PostMapping("v2/logout")
     public ResponseEntity<ApiResponse<?>> logoutAccount(
-            @CookieValue(name = "refreshToken") String refreshToken,
+            @CookieValue(name = "refreshToken", required = false) String refreshToken,
             HttpServletResponse response
     ) {
         authService.logoutAccount(refreshToken, response);
@@ -58,6 +61,20 @@ public class AuthController {
                 .status("success")
                 .code(HttpStatus.OK.value())
                 .message("Đăng xuất tài khoản thành công")
+                .build());
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<?>> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+        CustomUserDetail customUserDetail = (CustomUserDetail) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        String userId = customUserDetail.getUserId();
+
+        authService.changePassword(userId, changePasswordRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.builder()
+                        .status("success")
+                        .code(HttpStatus.OK.value())
+                        .message("Thay đổi mật khẩu thành công")
                 .build());
     }
 }

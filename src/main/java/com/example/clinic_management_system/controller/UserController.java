@@ -5,12 +5,14 @@ import com.example.clinic_management_system.dto.request.UserRequest;
 import com.example.clinic_management_system.dto.request.EmployeeUpdateRequest;
 import com.example.clinic_management_system.dto.response.ApiResponse;
 import com.example.clinic_management_system.dto.response.UserResponse;
+import com.example.clinic_management_system.security.CustomUserDetail;
 import com.example.clinic_management_system.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,13 +37,20 @@ public class UserController {
 
 
     // Lấy info chi tiết cho profile
-    @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<UserResponse>> getProfile(@PathVariable String userId) {
+    @GetMapping("")
+    public ResponseEntity<ApiResponse<UserResponse>> getProfile() {
+        CustomUserDetail customUserDetail =
+                (CustomUserDetail) SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getPrincipal();
+
+        String userId = customUserDetail.getUserId();
+
         UserResponse userResponse = userService.getProfile(userId);
         ApiResponse<UserResponse> apiResponse = ApiResponse.<UserResponse>builder()
                 .status("success")
-                .code(HttpStatus.CREATED.value())
-                .message("Tạo người dùng thành công")
+                .code(HttpStatus.OK.value())
+                .message("Lấy thông tin người dùng thành công")
                 .data(userResponse)
                 .build();
 
