@@ -1,8 +1,10 @@
 package com.example.clinic_management_system.service;
 
 import com.example.clinic_management_system.dto.request.AppointmentRequest;
+import com.example.clinic_management_system.dto.request.NotificationRequest;
 import com.example.clinic_management_system.dto.response.AppointmentDetailResponse;
 import com.example.clinic_management_system.dto.response.AppointmentResponse;
+import com.example.clinic_management_system.dto.response.BookedSlotDTO;
 import com.example.clinic_management_system.entity.*;
 import com.example.clinic_management_system.exception.BadRequestException;
 import com.example.clinic_management_system.exception.ResourceNotFoundException;
@@ -15,9 +17,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,8 +35,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final MedicalServiceRepository medicalServiceRepository;
     private final RoomRepository roomRepository;
     private final AppointmentMapper appointmentMapper;
+    private final NotificationSocketService notificationSocketService;
+    private final NotificationRepository notificationRepository;
 
     @Override
+    @Transactional
     public void createAppointment(AppointmentRequest appointmentRequest) {
         if (appointmentRequest.getPatientId() == null || appointmentRequest.getDoctorId() == null
             || appointmentRequest.getEmployeeId() == null || appointmentRequest.getRoomId() == null
@@ -87,6 +96,23 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setMedicalServiceEntity(serviceExist.get());
 
         appointmentRepository.save(appointment);
+
+        // 9. Tạo thông báo
+        Notification notification = notificationRepository.save(Notification.builder()
+                        .type("APPOINTMENT_CREATED")
+                        .title("Lịch hẹn mới")
+                        .message("Bệnh nhấn: " + patientExist.get().getFullName())
+                        .user(doctorExist.get())
+                .build());
+
+        // 10. Gửi thông báo
+        notificationSocketService.sendToDoctor(doctorExist.get().getUserId(), NotificationRequest.builder()
+                        .type(notification.getType())
+                        .title(notification.getTitle())
+                        .message(notification.getMessage())
+                        .isRead(notification.isRead())
+                        .createdAt(notification.getCreatedAt())
+                .build());
     }
 
     @Override
@@ -214,5 +240,30 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .serviceName(appointment.get().getMedicalServiceEntity().getServiceName())
                 .roomName(appointment.get().getRoom().getRoomName())
                 .build();
+    }
+
+    @Override
+    public List<BookedSlotDTO> getBookedSlots(String doctorId, LocalDate date, String roomId) {
+        // 1. Validate
+        if (doctorId == null || roomId == null || date == null) {
+            return Collections.emptyList();
+        }
+
+        // 2. Convert date -> UTC range
+        Instant start = date.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant end = date.atTime(23, 59, 59)
+                .atZone(ZoneOffset.UTC)
+                .toInstant();
+
+        // 3. Query DB
+        List<Appointment> appointments = appointmentRepository.findBookedSlots(doctorId, roomId, start, end);
+
+        // 4. Map DTO
+        return appointments.stream()
+                .map(a -> new BookedSlotDTO(
+                        a.getStartTime(),
+                        a.getDurationMinutes()
+                ))
+                .toList();
     }
 }

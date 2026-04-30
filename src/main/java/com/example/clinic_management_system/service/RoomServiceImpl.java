@@ -6,6 +6,7 @@ import com.example.clinic_management_system.dto.response.RoomResponse;
 import com.example.clinic_management_system.entity.Room;
 import com.example.clinic_management_system.exception.BadRequestException;
 import com.example.clinic_management_system.exception.ResourceNotFoundException;
+import com.example.clinic_management_system.mapper.RoomMapper;
 import com.example.clinic_management_system.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,22 +18,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
+    private final RoomMapper roomMapper;
 
     @Override
     public List<RoomResponse> getAllRooms() {
         List<Room> rooms = roomRepository.findAllRooms();
 
-        List<RoomResponse> roomResponses = rooms.stream()
-                .map(room -> {
-                    return RoomResponse.builder()
-                            .roomId(room.getRoomId())
-                            .roomName(room.getRoomName())
-                            .isActive(room.isActive())
-                            .createdAt(room.getCreatedAt())
-                            .updatedAt(room.getUpdatedAt())
-                            .build();
-                })
-                .toList();
+        List<RoomResponse> roomResponses = roomMapper.toResponseList(rooms);
         return roomResponses;
     }
 

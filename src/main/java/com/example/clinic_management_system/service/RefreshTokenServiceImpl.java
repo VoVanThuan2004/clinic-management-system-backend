@@ -1,6 +1,5 @@
 package com.example.clinic_management_system.service;
 
-import com.example.clinic_management_system.dto.request.RefreshTokenRequest;
 import com.example.clinic_management_system.dto.response.RefreshTokenResponse;
 import com.example.clinic_management_system.entity.RefreshToken;
 import com.example.clinic_management_system.entity.User;
@@ -12,6 +11,7 @@ import com.example.clinic_management_system.security.JwtTokenUtil;
 import com.example.clinic_management_system.security.TokenPayload;
 import com.example.clinic_management_system.utils.TokenConstants;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +25,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final JwtTokenUtil jwtTokenUtil;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -47,7 +48,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
         // 2. Tạo mã refresh token
         refreshTokenRepository.save(RefreshToken.builder()
-                        .refreshToken(refreshToken)
+                        .refreshToken(passwordEncoder.encode(refreshToken))
                         .userAgent(userAgent)
                         .ipAddress(ipAddress)
                         .expiredAt(Instant.now().plus(Duration.ofSeconds(TokenConstants.REFRESH_TOKEN_EXPIRATION)))
@@ -75,23 +76,23 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     @Override
-    public RefreshTokenResponse refreshTokenUser(RefreshTokenRequest refreshTokenRequest) {
-        if (refreshTokenRequest.getRefreshToken() == null) {
+    public RefreshTokenResponse refreshTokenUser(String refreshToken) {
+        if (refreshToken == null || refreshToken.isEmpty()) {
             throw new BadRequestException("Refresh token không hợp lệ");
         }
 
         // 1. Kiểm tra mã token còn hạn hay không
-        if (jwtTokenUtil.isTokenExpired(refreshTokenRequest.getRefreshToken())) {
+        if (jwtTokenUtil.isTokenExpired(refreshToken)) {
             throw new BadRequestException("Refresh token đã hết hạn");
         }
 
         // 2. Kiểm tra mã token hiện tại có tồn tại
-        Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findByRefreshToken(refreshTokenRequest.getRefreshToken());
+        Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findByRefreshToken(passwordEncoder.encode(refreshToken));
         if (refreshTokenOptional.isEmpty()) {
             throw new ResourceNotFoundException("Mã refresh token không hợp lệ");
         }
 
-        TokenPayload tokenPayload = jwtTokenUtil.getTokenPayload(refreshTokenRequest.getRefreshToken());
+        TokenPayload tokenPayload = jwtTokenUtil.getTokenPayload(refreshToken);
 
         // 3. Tạo mã access token
         String accessToken = jwtTokenUtil.generateToken(TokenPayload.builder()

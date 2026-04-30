@@ -1,10 +1,7 @@
 package com.example.clinic_management_system.controller;
 
 import com.example.clinic_management_system.dto.request.AppointmentRequest;
-import com.example.clinic_management_system.dto.response.ApiResponse;
-import com.example.clinic_management_system.dto.response.AppointmentDetailResponse;
-import com.example.clinic_management_system.dto.response.AppointmentResponse;
-import com.example.clinic_management_system.dto.response.PatientResponse;
+import com.example.clinic_management_system.dto.response.*;
 import com.example.clinic_management_system.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -84,6 +82,24 @@ public class AppointmentController {
                 .code(HttpStatus.OK.value())
                 .message("Lấy chi tiết lịch hẹn")
                 .data(appointmentDetailResponse)
+                .build());
+    }
+
+    // Lấy danh sách slots trống của 1 bác sĩ (thời gian, phòng khám)
+    @GetMapping("/booked-slots")
+    public ResponseEntity<ApiResponse<List<BookedSlotDTO>>> getBookedSlots(
+            @RequestParam(required = false) String doctorId,
+            @RequestParam(required = false) LocalDate date,
+            @RequestParam(required = false) String roomId
+    ) {
+
+        List<BookedSlotDTO> result = appointmentService.getBookedSlots(doctorId, date, roomId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<List<BookedSlotDTO>>builder()
+                        .status("success")
+                        .code(HttpStatus.OK.value())
+                        .message("Lấy danh sách slots đã có của lịch hẹn")
+                        .data(result)
                 .build());
     }
 

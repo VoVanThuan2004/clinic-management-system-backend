@@ -4,9 +4,12 @@ import com.example.clinic_management_system.dto.request.LoginRequest;
 import com.example.clinic_management_system.dto.request.LogoutRequest;
 import com.example.clinic_management_system.dto.response.LoginResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
-    LoginResponse login(LoginRequest loginRequest, HttpServletRequest httpServletRequest);
+    LoginResponse login(LoginRequest loginRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse);
 
     void logout(LogoutRequest logoutRequest);
+
+    void logoutAccount(String refreshToken, HttpServletResponse response);
 }

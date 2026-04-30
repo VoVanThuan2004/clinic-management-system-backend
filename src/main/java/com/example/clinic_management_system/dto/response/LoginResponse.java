@@ -7,9 +7,9 @@ import lombok.*;
 @Builder
 @Getter @Setter
 public class LoginResponse {
+    private String userId;
     private String fullName;
     private String avatarUrl;
     private String role;
     private String accessToken;
-    private String refreshToken;
 }

@@ -8,5 +8,5 @@ public interface RefreshTokenService {
 
     void deleteRefreshTokenForUser(String userId, String refreshToken);
 
-    RefreshTokenResponse refreshTokenUser(RefreshTokenRequest refreshTokenRequest);
+    RefreshTokenResponse refreshTokenUser(String refreshToken);
 }

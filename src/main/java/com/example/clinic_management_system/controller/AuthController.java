@@ -6,13 +6,11 @@ import com.example.clinic_management_system.dto.response.ApiResponse;
 import com.example.clinic_management_system.dto.response.LoginResponse;
 import com.example.clinic_management_system.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,8 +19,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest loginRequest, HttpServletRequest httpServletRequest) {
-        LoginResponse loginResponse = authService.login(loginRequest, httpServletRequest);
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
+            @RequestBody LoginRequest loginRequest,
+            HttpServletRequest httpServletRequest,
+            HttpServletResponse httpServletResponse
+    ) {
+        LoginResponse loginResponse = authService.login(loginRequest, httpServletRequest, httpServletResponse);
         ApiResponse<LoginResponse> apiResponse = ApiResponse.<LoginResponse>builder()
                 .status("success")
                 .code(HttpStatus.OK.value())
@@ -43,5 +45,19 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.status(HttpStatus.OK.value()).body(apiResponse);
+    }
+
+    @PostMapping("v2/logout")
+    public ResponseEntity<ApiResponse<?>> logoutAccount(
+            @CookieValue(name = "refreshToken") String refreshToken,
+            HttpServletResponse response
+    ) {
+        authService.logoutAccount(refreshToken, response);
+
+        return ResponseEntity.status(HttpStatus.OK.value()).body(ApiResponse.builder()
+                .status("success")
+                .code(HttpStatus.OK.value())
+                .message("Đăng xuất tài khoản thành công")
+                .build());
     }
 }

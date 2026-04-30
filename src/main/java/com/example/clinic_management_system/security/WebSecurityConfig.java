@@ -68,6 +68,7 @@ public class WebSecurityConfig {
                 "Content-Type",
                 "X-Requested-With"));
         configuration.setAllowCredentials(true); // Nếu cần gửi credentials (JWT qua header)
+        configuration.setExposedHeaders(List.of("Set-Cookie"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

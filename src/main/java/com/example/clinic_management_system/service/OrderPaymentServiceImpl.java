@@ -4,13 +4,19 @@ import com.example.clinic_management_system.dto.request.OrderPaymentRequest;
 import com.example.clinic_management_system.dto.response.OrderPaymentResponse;
 import com.example.clinic_management_system.entity.MedicalRecord;
 import com.example.clinic_management_system.entity.OrderPayment;
+import com.example.clinic_management_system.entity.PrescriptionItem;
+import com.example.clinic_management_system.exception.BadRequestException;
 import com.example.clinic_management_system.exception.ResourceNotFoundException;
 import com.example.clinic_management_system.mapper.OrderPaymentMapper;
 import com.example.clinic_management_system.repository.MedicalRecordRepository;
+import com.example.clinic_management_system.repository.MedicineRepository;
 import com.example.clinic_management_system.repository.OrderPaymentRepository;
+import com.example.clinic_management_system.repository.PrescriptionItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -19,8 +25,11 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
     private final OrderPaymentRepository orderPaymentRepository;
     private final MedicalRecordRepository medicalRecordRepository;
     private final OrderPaymentMapper orderPaymentMapper;
+    private final PrescriptionItemRepository prescriptionItemRepository;
+    private final MedicineRepository medicineRepository;
 
     @Override
+    @Transactional
     public String createOrderPayment(OrderPaymentRequest orderPaymentRequest) {
         // 1. Kiểm tra hồ sơ bệnh lý có tồn tại
         Optional<MedicalRecord> medicalRecord = medicalRecordRepository.findById(orderPaymentRequest.getMedicalRecordId());
@@ -29,6 +38,18 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
         }
 
         // Trừ tồn kho
+        if (orderPaymentRequest.getPaymentMethod().equals("cash")) {
+            List<PrescriptionItem> items = medicalRecord.get().getPrescription().getPrescriptionItems();
+            for (PrescriptionItem item: items) {
+                int currentStock = item.getMedicine().getStockQuantity();
+                int quantity = item.getQuantity();
+                if (currentStock < quantity) {
+                    throw new BadRequestException("Không đủ thuốc trong kho");
+                }
+                item.getMedicine().setStockQuantity(currentStock - quantity);
+                medicineRepository.save(item.getMedicine());
+            }
+        }
 
 
         // 2. Mapping data
