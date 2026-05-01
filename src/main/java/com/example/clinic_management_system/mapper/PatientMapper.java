@@ -3,6 +3,7 @@ package com.example.clinic_management_system.mapper;
 import com.example.clinic_management_system.dto.request.PatientRequest;
 import com.example.clinic_management_system.dto.response.PatientResponse;
 import com.example.clinic_management_system.entity.Patient;
+import com.example.clinic_management_system.utils.PatientCodeUtil;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -24,12 +25,19 @@ public class PatientMapper {
 
     public Patient toEntity(PatientRequest patientRequest) {
         return Patient.builder()
+                .patientCode(PatientCodeUtil.generatePatientCode())
                 .fullName(patientRequest.getFullName())
                 .gender(patientRequest.getGender())
                 .phoneNumber(patientRequest.getPhoneNumber())
                 .dateOfBirth(patientRequest.getDateOfBirth())
                 .address(patientRequest.getAddress())
                 .build();
+    }
+
+    public List<Patient> toEntityList(List<PatientRequest> patientRequests) {
+        return patientRequests.stream()
+                .map(this::toEntity)
+                .toList();
     }
 
     public List<PatientResponse> toResponseList(List<Patient> patients) {

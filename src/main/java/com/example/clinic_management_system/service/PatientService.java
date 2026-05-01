@@ -16,4 +16,8 @@ public interface PatientService {
     Page<PatientResponse> getAllPatientsPagination(int page, int size, String search);
 
     void deletePatients(List<String> ids);
+
+    void addListPatient(List<PatientRequest> patientRequestList);
+
+    List<PatientResponse> getAllPatientsExport(String search);
 }

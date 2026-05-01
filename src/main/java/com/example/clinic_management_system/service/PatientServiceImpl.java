@@ -16,8 +16,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -47,8 +49,6 @@ public class PatientServiceImpl implements PatientService {
         }
 
         Patient patient = patientMapper.toEntity(patientRequest);
-        patient.setPatientCode(PatientCodeUtil.generatePatientCode());
-
         patientRepository.save(patient);
     }
 
@@ -84,8 +84,9 @@ public class PatientServiceImpl implements PatientService {
             throw new ResourceNotFoundException("Bệnh nhân không tồn tại");
         }
 
-        // 2. Xóa bệnh nhân
-        patientRepository.delete(patientOptional.get());
+        // 2. Xóa bệnh nhân -> xóa mềm
+        patientOptional.get().setDeleted(true);
+        patientRepository.save(patientOptional.get());
     }
 
     @Override
@@ -100,11 +101,69 @@ public class PatientServiceImpl implements PatientService {
     @Override
     @Transactional
     public void deletePatients(List<String> ids) {
-        if (ids.isEmpty()) {
+        if (ids == null || ids.isEmpty()) {
             throw new BadRequestException("Danh sách ids đang trống");
         }
 
-        // Xóa danh sách bệnh nhân
-        patientRepository.deleteAllById(ids);
+        List<Patient> patients = patientRepository.findAllById(ids);
+
+        if (patients.isEmpty()) {
+            throw new ResourceNotFoundException("Không tìm thấy bệnh nhân hợp lệ");
+        }
+
+        patients.forEach(patient -> patient.setDeleted(true));
+
+        patientRepository.saveAll(patients);
+    }
+
+    @Override
+    @Transactional
+    public void addListPatient(List<PatientRequest> patientRequestList) {
+        if (patientRequestList == null || patientRequestList.isEmpty()) {
+            throw new BadRequestException("Danh sách bệnh nhân đang trống");
+        }
+
+        // 1. Check SĐT trong list có bị trùng nhau
+        Set<String> uniquePhones = new HashSet<>();
+        for (PatientRequest patientRequest : patientRequestList) {
+            if (!uniquePhones.add(patientRequest.getPhoneNumber())) {
+                System.out.println(patientRequest.getPhoneNumber());
+                throw new BadRequestException(
+                        "Số điện thoại bị trùng trong file import: " + patientRequest.getPhoneNumber()
+                );
+            }
+        }
+
+        // 2. Check trùng SĐT trong DB
+        List<String> phoneNumbers = patientRequestList.stream()
+                .map(PatientRequest::getPhoneNumber)
+                .toList();
+
+        List<Patient> existingPatients = patientRepository.findAllByPhoneNumberInAndDeletedFalse(phoneNumbers);
+        if (!existingPatients.isEmpty()) {
+            String duplicatedPhones = existingPatients.stream()
+                    .map(Patient::getPhoneNumber)
+                    .distinct()
+                    .reduce((a, b) -> a + ", " + b)
+                    .orElse("");
+
+            throw new BadRequestException(
+                    "Số điện thoại đã tồn tại trong hệ thống: " + duplicatedPhones
+            );
+        }
+
+        // 3. Insert danh sách bệnh nhân
+        List<Patient> patientInserts = patientMapper.toEntityList(patientRequestList);
+        patientRepository.saveAll(patientInserts);
+
+    }
+
+    @Override
+    public List<PatientResponse> getAllPatientsExport(String search) {
+        List<Patient> patients = patientRepository.findAllPatientsBySearch(search);
+
+        // Mapping data trả về
+        List<PatientResponse> patientResponses = patientMapper.toResponseList(patients);
+        return patientResponses;
     }
 }

@@ -29,6 +29,17 @@ public class PatientController {
                 .build());
     }
 
+    // Thêm danh sách bệnh nhân
+    @PostMapping("/import")
+    public ResponseEntity<ApiResponse<?>> addListPatient (@RequestBody List<PatientRequest> patientRequestList) {
+        patientService.addListPatient(patientRequestList);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.builder()
+                        .status("success")
+                        .code(HttpStatus.CREATED.value())
+                        .message("Thêm danh sách bệnh nhân thành công")
+                .build());
+    }
+
     @PutMapping("/{patientId}")
     public ResponseEntity<ApiResponse<?>> updatePatient (@PathVariable String patientId, @RequestBody PatientRequest patientRequest) {
         patientService.updatePatient(patientId, patientRequest);
@@ -73,6 +84,21 @@ public class PatientController {
                 .status("success")
                 .code(HttpStatus.OK.value())
                 .message("Lấy danh sách bệnh nhân")
+                .data(patientResponses)
+                .build());
+    }
+
+    // Lấy danh sách bệnh nhân export theo search
+    @GetMapping("/export")
+    public ResponseEntity<ApiResponse<List<PatientResponse>>> getAllPatientsExport(
+            @RequestParam(defaultValue = "") String search
+    ) {
+        List<PatientResponse> patientResponses = patientService.getAllPatientsExport(search);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<List<PatientResponse>>builder()
+                .status("success")
+                .code(HttpStatus.OK.value())
+                .message("Export danh sách bệnh nhân thành công")
                 .data(patientResponses)
                 .build());
     }

@@ -3,10 +3,12 @@ package com.example.clinic_management_system.controller;
 import com.example.clinic_management_system.dto.request.DoctorUpdateRequest;
 import com.example.clinic_management_system.dto.request.UserRequest;
 import com.example.clinic_management_system.dto.request.EmployeeUpdateRequest;
+import com.example.clinic_management_system.dto.request.UserUpdateRequest;
 import com.example.clinic_management_system.dto.response.ApiResponse;
 import com.example.clinic_management_system.dto.response.UserResponse;
 import com.example.clinic_management_system.security.CustomUserDetail;
 import com.example.clinic_management_system.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -73,6 +75,22 @@ public class UserController {
                         .data(userResponses)
                         .build()
         );
+    }
+
+    // Cập nhật thông tin profile
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<?>> updateUser(
+            @PathVariable String id,
+            @Valid @RequestPart("data") UserUpdateRequest userUpdateRequest,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
+        userService.updateUser(id, userUpdateRequest, file);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.builder()
+                        .status("success")
+                        .code(HttpStatus.OK.value())
+                        .message("Cập nhật thông tin thành công")
+                .build());
     }
 
     // Cập nhật thông tin nhân viên

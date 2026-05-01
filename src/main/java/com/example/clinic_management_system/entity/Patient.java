@@ -28,6 +28,10 @@ public class Patient {
     private LocalDate dateOfBirth;
     private String address;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean isDeleted = false;
+
     @CreationTimestamp
     @Column(updatable = false)
     private Instant createdAt;

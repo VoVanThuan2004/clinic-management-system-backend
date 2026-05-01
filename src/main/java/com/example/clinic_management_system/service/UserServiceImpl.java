@@ -3,6 +3,7 @@ package com.example.clinic_management_system.service;
 import com.example.clinic_management_system.dto.request.DoctorUpdateRequest;
 import com.example.clinic_management_system.dto.request.UserRequest;
 import com.example.clinic_management_system.dto.request.EmployeeUpdateRequest;
+import com.example.clinic_management_system.dto.request.UserUpdateRequest;
 import com.example.clinic_management_system.dto.response.UploadResult;
 import com.example.clinic_management_system.dto.response.UserResponse;
 import com.example.clinic_management_system.entity.DoctorDetail;
@@ -22,6 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -204,6 +209,54 @@ public class UserServiceImpl implements UserService {
         doctor.get().getDoctorDetail().setExperienceYears(doctorUpdateRequest.getDoctorDetail().getExperienceYears());
         doctor.get().getDoctorDetail().setBiography(doctorUpdateRequest.getDoctorDetail().getBiography());
         userRepository.save(doctor.get());
+    }
+
+    @Override
+    public void updateUser(String id, UserUpdateRequest userUpdateRequest, MultipartFile file) {
+        // 1. Kiểm tra thông tin user
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            throw new ResourceNotFoundException("Người dùng không tồn tại");
+        }
+
+        // 2. Set các field cần cập nhật
+        user.get().setFullName(userUpdateRequest.getFullName());
+        user.get().setPhoneNumber(userUpdateRequest.getPhoneNumber());
+
+        // 3. Kiểm tra có upload file mới không
+        if (file != null) {
+            // 3.1 Xóa ảnh cũ trên cloudinary
+            if (user.get().getAvatarPublicId() != null) {
+                cloudinaryService.deleteFile(user.get().getAvatarPublicId());
+            }
+
+            // 3.2 Kiểm tra định dạng file
+            if (file.getSize() > 5 * 1024 * 1024) {
+                throw new BadRequestException("File vượt quá 5MB");
+            }
+
+            String contentType = file.getContentType();
+            List<String> allowedTypes = List.of("image/jpeg", "image/png", "image/jpg");
+            if (contentType == null || !allowedTypes.contains(contentType)) {
+                throw new BadRequestException("Chỉ chấp nhận JPG, PNG");
+            }
+
+            try {
+                BufferedImage image = ImageIO.read(file.getInputStream());
+                if (image == null) {
+                    throw new BadRequestException("File không phải ảnh hợp lệ");
+                }
+            } catch (IOException e) {
+                throw new BadRequestException("Không đọc được file");
+            }
+
+            // 3.3 Upload file ảnh lên cloudinary
+            UploadResult uploadResult = cloudinaryService.uploadFile(file);
+            user.get().setAvatarPublicId(uploadResult.getPublicId());
+            user.get().setAvatarUrl(uploadResult.getSecureUrl());
+        }
+
+        userRepository.save(user.get());
     }
 
 }
