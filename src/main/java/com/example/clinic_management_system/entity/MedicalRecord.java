@@ -42,4 +42,7 @@ public class MedicalRecord {
 
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<RecordFile> recordFiles;
+
+    @OneToOne(mappedBy = "medicalRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private OrderPayment orderPayment;
 }

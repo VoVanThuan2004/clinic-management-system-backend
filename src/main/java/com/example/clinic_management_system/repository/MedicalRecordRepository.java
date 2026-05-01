@@ -25,4 +25,13 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, St
             @Param("doctorId") String doctorId,
             @Param("paymentStatus") boolean paymentStatus
     );
+
+
+    @Query("""
+        select mr
+        from MedicalRecord mr
+        join Appointment a on a.appointmentId = mr.appointment.appointmentId
+        where a.patient.patientId = :patientId
+    """)
+    Page<MedicalRecord> findAllByPatientId(@Param("patientId") String patientId, Pageable pageable);
 }

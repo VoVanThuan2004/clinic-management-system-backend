@@ -105,8 +105,6 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
         // 2. Mapping data trả về
         PrescriptionResponse prescriptionResponse = prescriptionMapper.toResponse(medicalRecord.get().getPrescription());
-        prescriptionResponse.setServiceFee(medicalRecord.get().getAppointment().getMedicalServiceEntity().getPrice());
-        prescriptionResponse.setServiceName(medicalRecord.get().getAppointment().getMedicalServiceEntity().getServiceName());
 
         MedicalRecordPDFResponse medicalRecordPDFResponse = MedicalRecordPDFResponse.builder()
                 .patientName(medicalRecord.get().getAppointment().getPatient().getFullName())

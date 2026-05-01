@@ -3,6 +3,7 @@ package com.example.clinic_management_system.controller;
 
 import com.example.clinic_management_system.dto.request.PatientRequest;
 import com.example.clinic_management_system.dto.response.ApiResponse;
+import com.example.clinic_management_system.dto.response.MedicalRecordPDFResponse;
 import com.example.clinic_management_system.dto.response.PatientResponse;
 import com.example.clinic_management_system.service.PatientService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class PatientController {
                 .build());
     }
 
-    // Thêm danh sách bệnh nhân
+    // Thêm danh sách bệnh nhân (Import excel)
     @PostMapping("/import")
     public ResponseEntity<ApiResponse<?>> addListPatient (@RequestBody List<PatientRequest> patientRequestList) {
         patientService.addListPatient(patientRequestList);
@@ -100,6 +101,23 @@ public class PatientController {
                 .code(HttpStatus.OK.value())
                 .message("Export danh sách bệnh nhân thành công")
                 .data(patientResponses)
+                .build());
+    }
+
+    // Xem lịch sử khám của 1 bệnh nhân
+    @GetMapping("/{patientId}/history")
+    public ResponseEntity<ApiResponse<Page<MedicalRecordPDFResponse>>> getPatientHistory(
+            @PathVariable String patientId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<MedicalRecordPDFResponse> medicalRecordPDFResponses = patientService.getPatientHistory(patientId, page, size);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<Page<MedicalRecordPDFResponse>>builder()
+                .status("success")
+                .code(HttpStatus.OK.value())
+                .message("Export danh sách bệnh nhân thành công")
+                .data(medicalRecordPDFResponses)
                 .build());
     }
 

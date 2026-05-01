@@ -1,6 +1,7 @@
 package com.example.clinic_management_system.service;
 
 import com.example.clinic_management_system.dto.request.PatientRequest;
+import com.example.clinic_management_system.dto.response.MedicalRecordPDFResponse;
 import com.example.clinic_management_system.dto.response.PatientResponse;
 import org.springframework.data.domain.Page;
 
@@ -20,4 +21,6 @@ public interface PatientService {
     void addListPatient(List<PatientRequest> patientRequestList);
 
     List<PatientResponse> getAllPatientsExport(String search);
+
+    Page<MedicalRecordPDFResponse> getPatientHistory(String patientId, int page, int size);
 }

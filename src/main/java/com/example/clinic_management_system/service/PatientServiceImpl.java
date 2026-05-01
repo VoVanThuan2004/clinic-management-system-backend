@@ -1,11 +1,17 @@
 package com.example.clinic_management_system.service;
 
 import com.example.clinic_management_system.dto.request.PatientRequest;
+import com.example.clinic_management_system.dto.response.MedicalRecordPDFResponse;
 import com.example.clinic_management_system.dto.response.PatientResponse;
+import com.example.clinic_management_system.dto.response.PrescriptionResponse;
+import com.example.clinic_management_system.entity.MedicalRecord;
 import com.example.clinic_management_system.entity.Patient;
 import com.example.clinic_management_system.exception.BadRequestException;
 import com.example.clinic_management_system.exception.ResourceNotFoundException;
 import com.example.clinic_management_system.mapper.PatientMapper;
+import com.example.clinic_management_system.mapper.PrescriptionMapper;
+import com.example.clinic_management_system.mapper.RecordFileMapper;
+import com.example.clinic_management_system.repository.MedicalRecordRepository;
 import com.example.clinic_management_system.repository.PatientRepository;
 import com.example.clinic_management_system.utils.PatientCodeUtil;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +32,9 @@ import java.util.Set;
 public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
     private final PatientMapper patientMapper;
+    private final MedicalRecordRepository medicalRecordRepository;
+    private final PrescriptionMapper prescriptionMapper;
+    private final RecordFileMapper recordFileMapper;
 
 
     @Override
@@ -165,5 +174,40 @@ public class PatientServiceImpl implements PatientService {
         // Mapping data trả về
         List<PatientResponse> patientResponses = patientMapper.toResponseList(patients);
         return patientResponses;
+    }
+
+    @Override
+    @Transactional
+    public Page<MedicalRecordPDFResponse> getPatientHistory(String patientId, int page, int size) {
+        // 1. Check bệnh nhân có tồn tại
+        Optional<Patient> patient = patientRepository.findById(patientId);
+        if (patient.isEmpty()) {
+            throw new ResourceNotFoundException("Bệnh nhân không tồn tại");
+        }
+
+        // 2. Tạo object phân trang
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        // 3. Query danh sách medical record thuộc patientId
+        Page<MedicalRecord> medicalRecords = medicalRecordRepository.findAllByPatientId(patientId, pageable);
+
+        // 4. Mapping data trả về
+        Page<MedicalRecordPDFResponse> medicalRecordPDFResponses = medicalRecords
+                .map(medicalRecord -> MedicalRecordPDFResponse.builder()
+                        .patientName(medicalRecord.getAppointment().getPatient().getFullName())
+                        .dateOfBirth(medicalRecord.getAppointment().getPatient().getDateOfBirth())
+                        .gender(medicalRecord.getAppointment().getPatient().getGender())
+                        .phoneNumber(medicalRecord.getAppointment().getPatient().getPhoneNumber())
+                        .address(medicalRecord.getAppointment().getPatient().getAddress())
+                        .doctorName(medicalRecord.getAppointment().getDoctor().getFullName())
+                        .specialty(medicalRecord.getAppointment().getDoctor().getDoctorDetail().getSpecialty())
+                        .symptoms(medicalRecord.getSymptoms())
+                        .diagnosis(medicalRecord.getDiagnosis())
+                        .notes(medicalRecord.getNotes())
+                        .prescriptions(prescriptionMapper.toResponse(medicalRecord.getPrescription()))
+                        .recordFiles(recordFileMapper.toResponseList(medicalRecord.getRecordFiles()))
+                        .build());
+
+        return medicalRecordPDFResponses;
     }
 }

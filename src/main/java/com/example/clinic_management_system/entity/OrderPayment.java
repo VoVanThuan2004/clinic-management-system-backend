@@ -18,6 +18,7 @@ public class OrderPayment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String orderId;
 
+    private String serviceName;
     private Double serviceFee;
     private Double totalMedicine;
     private Double totalAmount;
