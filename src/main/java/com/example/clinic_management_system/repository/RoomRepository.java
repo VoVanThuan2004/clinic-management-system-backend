@@ -19,6 +19,7 @@ public interface RoomRepository extends JpaRepository<Room, String> {
     @Query("""
         select new com.example.clinic_management_system.dto.response.RoomOptionResponse(r.roomId, r.roomName)
         from Room r
+        where r.isActive = true
         order by r.createdAt desc
     """)
     List<RoomOptionResponse> findAllOptions();

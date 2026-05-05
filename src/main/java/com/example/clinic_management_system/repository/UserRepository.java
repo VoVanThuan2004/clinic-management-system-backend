@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, String> {
@@ -28,4 +29,17 @@ public interface UserRepository extends JpaRepository<User, String> {
         where u.role.name = :roleName
     """)
     boolean existsUserByRoleName(@Param("roleName") String roleName);
+
+
+    // Lấy danh sách bác sĩ dạng select option
+    @Query("""
+        select u
+        from User u
+        where (
+            :search is null
+            or u.fullName ilike concat('%', :search, '%')
+            or u.doctorDetail.specialty ilike concat('%', :search, '%')
+        )      
+    """)
+    List<User> findAllDoctorsOption(@Param("search") String search);
 }

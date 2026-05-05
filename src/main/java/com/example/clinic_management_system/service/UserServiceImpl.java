@@ -4,6 +4,7 @@ import com.example.clinic_management_system.dto.request.DoctorUpdateRequest;
 import com.example.clinic_management_system.dto.request.UserRequest;
 import com.example.clinic_management_system.dto.request.EmployeeUpdateRequest;
 import com.example.clinic_management_system.dto.request.UserUpdateRequest;
+import com.example.clinic_management_system.dto.response.DoctorOptionResponse;
 import com.example.clinic_management_system.dto.response.UploadResult;
 import com.example.clinic_management_system.dto.response.UserResponse;
 import com.example.clinic_management_system.entity.DoctorDetail;
@@ -26,6 +27,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -257,6 +260,21 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(user.get());
+    }
+
+    @Override
+    @Transactional
+    public List<DoctorOptionResponse> getAllDoctorsOption(String search) {
+        // Query data trả về
+        List<User> doctors = userRepository.findAllDoctorsOption(search);
+
+        return doctors.stream()
+        .map(doctor -> DoctorOptionResponse.builder()
+        .doctorId(doctor.getUserId())
+        .doctorName(doctor.getFullName())
+        .specialty(doctor.getDoctorDetail().getSpecialty())
+        .build())
+        .toList();
     }
 
 }

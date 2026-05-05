@@ -5,11 +5,15 @@ import com.example.clinic_management_system.dto.request.UserRequest;
 import com.example.clinic_management_system.dto.request.EmployeeUpdateRequest;
 import com.example.clinic_management_system.dto.request.UserUpdateRequest;
 import com.example.clinic_management_system.dto.response.ApiResponse;
+import com.example.clinic_management_system.dto.response.DoctorOptionResponse;
 import com.example.clinic_management_system.dto.response.UserResponse;
 import com.example.clinic_management_system.security.CustomUserDetail;
 import com.example.clinic_management_system.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -126,4 +131,18 @@ public class UserController {
                         .message("Cập nhật thông tin bác sĩ thành công")
                         .build());
     }
+
+    // Lấy thông tin chọn bác sĩ
+    @GetMapping("/doctors/select")
+    public ResponseEntity<ApiResponse<List<DoctorOptionResponse>>> getAllDoctorsOption(@RequestParam(required = false) String search) {
+        List<DoctorOptionResponse> doctorOptionResponses = userService.getAllDoctorsOption(search);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<List<DoctorOptionResponse>>builder()
+        .status("success")
+        .code(HttpStatus.OK.value())
+        .message("Lấy danh sách lựa chọn bác sĩ")
+        .data(doctorOptionResponses)
+        .build());
+    }
+    
 }

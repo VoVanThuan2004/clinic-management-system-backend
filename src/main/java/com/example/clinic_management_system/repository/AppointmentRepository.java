@@ -45,4 +45,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, String
             @Param("roomId") String roomId,
             @Param("start") Instant start,
             @Param("end") Instant end);
+
+    @Query("""
+        select a
+        from Appointment a
+        where (a.doctor.userId = :doctorId)
+        and a.startTime >= :startTime and a.startTime <= :endTime
+        and a.status <> 'cancelled'
+        order by a.createdAt desc
+    """)
+    List<Appointment> findAllAppointmentsOfDoctor(String doctorId, Instant startTime, Instant endTime);
 }

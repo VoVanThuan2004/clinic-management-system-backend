@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -67,12 +68,41 @@ public class AppointmentController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<Page<AppointmentResponse>>builder()
                         .status("success")
                         .code(HttpStatus.OK.value())
-                        .message("Lấy danh sách lịch hẹn")
+                        .message("Lấy danh sách lịch hẹn khám")
                         .data(appointments)
                 .build());
     }
 
-    // Lấy chi tiết 1 lịch hẹn khám
+    // Lấy danh sách lịch hẹn khám của 1 bác sĩ
+    @GetMapping("/doctor")
+    public ResponseEntity<ApiResponse<List<AppointmentResponse>>> getAllAppointmentsOfDoctor(
+            @RequestParam String doctorId,
+            @RequestParam Instant startTime,
+            @RequestParam Instant endTime
+    ) {
+        List<AppointmentResponse> appointmentResponses = appointmentService.getAllAppointmentsOfDoctor(doctorId, startTime, endTime);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<List<AppointmentResponse>>builder()
+                        .status("success")
+                        .code(HttpStatus.OK.value())
+                        .message("Lấy danh sách lịch hẹn khám của bác sĩ")
+                        .data(appointmentResponses)
+                .build());
+    }
+
+    // Lấy chi tiết 1 lịch hẹn khám tải pdf
+    @GetMapping("/{appointmentId}/pdf")
+    public ResponseEntity<ApiResponse<AppointmentDetailPDFResponse>> getAppointmentDetailPDF(@PathVariable String appointmentId) {
+        AppointmentDetailPDFResponse appointmentDetailPDFResponse = appointmentService.getAppointmentDetailPDF(appointmentId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<AppointmentDetailPDFResponse>builder()
+                .status("success")
+                .code(HttpStatus.OK.value())
+                .message("Lấy chi tiết lịch hẹn")
+                .data(appointmentDetailPDFResponse)
+                .build());
+    }
+
     @GetMapping("/{appointmentId}")
     public ResponseEntity<ApiResponse<AppointmentDetailResponse>> getAppointmentDetail(@PathVariable String appointmentId) {
         AppointmentDetailResponse appointmentDetailResponse = appointmentService.getAppointmentDetail(appointmentId);

@@ -31,7 +31,7 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, St
         select mr
         from MedicalRecord mr
         join Appointment a on a.appointmentId = mr.appointment.appointmentId
-        where a.patient.patientId = :patientId
+        where a.patient.patientId = :patientId and mr.orderPayment.paymentStatus = true
     """)
     Page<MedicalRecord> findAllByPatientId(@Param("patientId") String patientId, Pageable pageable);
 }

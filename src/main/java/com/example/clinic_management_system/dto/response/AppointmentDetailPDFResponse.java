@@ -9,22 +9,22 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 @Data
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class AppointmentDetailResponse {
+public class AppointmentDetailPDFResponse {
     private String appointmentId;
-    private String patientId;
-    private String patientCode;
     private String patientName;
-    private String phoneNumber;
-    private Integer gender;
-    private String address;
     private LocalDate dateOfBirth;
-    private String doctorId;
-    private String employeeId;
-    private String roomId;
-    private String serviceId;
+    private Integer gender;
+    private String phoneNumber;
+    private String address;
+    private String doctorName;
+    private String specialty;
+    private String employeeName;
+    private String roomName;
+    private String serviceName;
     private Instant startTime;
-    private Integer durationMinutes;
     private String reason;
+    private String status;
 }

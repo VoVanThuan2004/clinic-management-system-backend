@@ -1,7 +1,7 @@
 package com.example.clinic_management_system.service;
 
 import com.example.clinic_management_system.dto.request.AppointmentRequest;
-import com.example.clinic_management_system.dto.request.NotificationRequest;
+import com.example.clinic_management_system.dto.response.AppointmentDetailPDFResponse;
 import com.example.clinic_management_system.dto.response.AppointmentDetailResponse;
 import com.example.clinic_management_system.dto.response.AppointmentResponse;
 import com.example.clinic_management_system.dto.response.BookedSlotDTO;
@@ -106,13 +106,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .build());
 
         // 10. Gửi thông báo
-        notificationSocketService.sendToDoctor(doctorExist.get().getUserId(), NotificationRequest.builder()
-                        .type(notification.getType())
-                        .title(notification.getTitle())
-                        .message(notification.getMessage())
-                        .isRead(notification.isRead())
-                        .createdAt(notification.getCreatedAt())
-                .build());
+//        notificationSocketService.sendToDoctor(doctorExist.get().getUserId(), NotificationRequest.builder()
+//                        .type(notification.getType())
+//                        .title(notification.getTitle())
+//                        .message(notification.getMessage())
+//                        .isRead(notification.isRead())
+//                        .createdAt(notification.getCreatedAt())
+//                .build());
     }
 
     @Override
@@ -185,7 +185,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public void changeAppointmentStatus(String appointmentId, String status) {
-        // 2. Kiểm tra lịch hẹn có hợp lệ
+        // 1. Kiểm tra lịch hẹn có hợp lệ
         Optional<Appointment> appointment = appointmentRepository.findById(appointmentId);
         if (appointment.isEmpty()) {
             throw new ResourceNotFoundException("Lịch hẹn không tồn tại");
@@ -218,7 +218,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public AppointmentDetailResponse getAppointmentDetail(String appointmentId) {
+    @Transactional
+    public AppointmentDetailPDFResponse getAppointmentDetailPDF(String appointmentId) {
         // 1. Kiểm tra lịch hẹn có hợp lệ
         Optional<Appointment> appointment = appointmentRepository.findById(appointmentId);
         if (appointment.isEmpty()) {
@@ -226,19 +227,21 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         // 2. Trả về response
-        return AppointmentDetailResponse.builder()
+        return AppointmentDetailPDFResponse.builder()
                 .appointmentId(appointment.get().getAppointmentId())
                 .patientName(appointment.get().getPatient().getFullName())
                 .phoneNumber(appointment.get().getPatient().getPhoneNumber())
                 .gender(appointment.get().getPatient().getGender())
                 .dateOfBirth(appointment.get().getPatient().getDateOfBirth())
                 .doctorName(appointment.get().getDoctor().getFullName())
+                .specialty(appointment.get().getDoctor().getDoctorDetail().getSpecialty())
                 .employeeName(appointment.get().getEmployee().getFullName())
                 .startTime(appointment.get().getStartTime())
                 .status(appointment.get().getStatus())
                 .reason(appointment.get().getReason())
                 .serviceName(appointment.get().getMedicalServiceEntity().getServiceName())
                 .roomName(appointment.get().getRoom().getRoomName())
+                .address(appointment.get().getPatient().getAddress())
                 .build();
     }
 
@@ -265,5 +268,47 @@ public class AppointmentServiceImpl implements AppointmentService {
                         a.getDurationMinutes()
                 ))
                 .toList();
+    }
+
+    @Override
+    public List<AppointmentResponse> getAllAppointmentsOfDoctor(String doctorId, Instant startTime, Instant endTime) {
+        Optional<User> doctor = userRepository.findById(doctorId);
+        if (doctor.isEmpty()) {
+            throw new ResourceNotFoundException("Bác sĩ không tồn tại");
+        }
+
+        // Query data trả về danh sách lịch hẹn
+        List<Appointment> appointments = appointmentRepository.findAllAppointmentsOfDoctor(doctorId, startTime, endTime);
+
+        // Mapping data trả về
+        return appointmentMapper.toResponseList(appointments);
+    }
+
+    @Override
+    @Transactional
+    public AppointmentDetailResponse getAppointmentDetail(String appointmentId) {
+        // 1. Kiểm tra lịch hẹn có hợp lệ
+        Optional<Appointment> appointment = appointmentRepository.findById(appointmentId);
+        if (appointment.isEmpty()) {
+            throw new ResourceNotFoundException("Lịch hẹn không tồn tại");
+        }
+
+        return AppointmentDetailResponse.builder()
+                .appointmentId(appointmentId)
+                .patientId(appointment.get().getPatient().getPatientId())
+                .patientCode(appointment.get().getPatient().getPatientCode())
+                .patientName(appointment.get().getPatient().getFullName())
+                .phoneNumber(appointment.get().getPatient().getPhoneNumber())
+                .gender(appointment.get().getPatient().getGender())
+                .dateOfBirth(appointment.get().getPatient().getDateOfBirth())
+                .address(appointment.get().getPatient().getAddress())
+                .employeeId(appointment.get().getEmployee().getUserId())
+                .doctorId(appointment.get().getDoctor().getUserId())
+                .roomId(appointment.get().getRoom().getRoomId())
+                .serviceId(appointment.get().getMedicalServiceEntity().getServiceId())
+                .startTime(appointment.get().getStartTime())
+                .durationMinutes(appointment.get().getDurationMinutes())
+                .reason(appointment.get().getReason())
+                .build();
     }
 }

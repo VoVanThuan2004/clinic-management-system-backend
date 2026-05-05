@@ -6,6 +6,8 @@ import com.example.clinic_management_system.entity.Appointment;
 import com.example.clinic_management_system.utils.AppointmentStatusConstants;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class AppointmentMapper {
 
@@ -22,6 +24,12 @@ public class AppointmentMapper {
                 .serviceName(appointment.getMedicalServiceEntity().getServiceName())
                 .roomName(appointment.getRoom().getRoomName())
                 .build();
+    }
+
+    public List<AppointmentResponse> toResponseList(List<Appointment> appointmentList) {
+        return appointmentList.stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     public Appointment toEntity(AppointmentRequest appointmentRequest) {
