@@ -47,6 +47,9 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
         // 2. Lấy thông tin toa thuốc
         Prescription prescription = prescriptionRepository.findByMedicalRecordId(recordId);
+        if (prescription == null) {
+            return null;
+        }
 
         // 3. Mapper data trả về
         PrescriptionResponse prescriptionResponse = prescriptionMapper.toResponse(prescription);

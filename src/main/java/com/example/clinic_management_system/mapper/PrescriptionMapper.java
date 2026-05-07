@@ -15,8 +15,6 @@ public class PrescriptionMapper {
                 .prescriptionId(prescription.getPrescriptionId())
                 .createdAt(prescription.getCreatedAt())
                 .items(prescriptionItemMapper.toResponseList(prescription.getPrescriptionItems()))
-                .serviceName(prescription.getMedicalRecord().getOrderPayment().getServiceName())
-                .serviceFee(prescription.getMedicalRecord().getOrderPayment().getServiceFee())
                 .build();
     }
 }

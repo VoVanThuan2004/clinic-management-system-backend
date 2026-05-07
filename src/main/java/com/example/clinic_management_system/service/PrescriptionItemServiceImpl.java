@@ -12,6 +12,7 @@ import com.example.clinic_management_system.repository.PrescriptionItemRepositor
 import com.example.clinic_management_system.repository.PrescriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -24,6 +25,7 @@ public class PrescriptionItemServiceImpl implements PrescriptionItemService {
     private final PrescriptionItemMapper prescriptionItemMapper;
 
     @Override
+    @Transactional
     public void addItem(PrescriptionItemRequest prescriptionItemRequest) {
         // 1. Kiểm tra toa thuốc có hợp lệ
         Optional<Prescription> prescription = prescriptionRepository.findById(prescriptionItemRequest.getPrescriptionId());
@@ -37,9 +39,21 @@ public class PrescriptionItemServiceImpl implements PrescriptionItemService {
             throw new ResourceNotFoundException("Thuốc không tồn tại");
         }
 
-        // 3. Thêm thuốc vào item
-        PrescriptionItem prescriptionItem = prescriptionItemMapper.toEntity(prescriptionItemRequest, medicine.get(), prescription.get());
-        prescriptionItemRepository.save(prescriptionItem);
+        // 3. Kiểm tra thuốc hiện tại có trong toa -> thì cộng quantity lên 1.
+        Optional<PrescriptionItem> prescriptionItemExist = prescriptionItemRepository.findByPrescriptionIdAndMedicineId(
+                prescriptionItemRequest.getPrescriptionId(),
+                medicine.get().getMedicineId()
+        );
+        if (prescriptionItemExist.isPresent()) {
+            prescriptionItemExist.get().setQuantity(prescriptionItemExist.get().getQuantity() + prescriptionItemRequest.getQuantity());
+            prescriptionItemRepository.save(prescriptionItemExist.get());
+        }
+
+        // 4. Thêm thuốc vào item
+       else {
+            PrescriptionItem prescriptionItem = prescriptionItemMapper.toEntity(prescriptionItemRequest, medicine.get(), prescription.get());
+            prescriptionItemRepository.save(prescriptionItem);
+        }
     }
 
     @Override

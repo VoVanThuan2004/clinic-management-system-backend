@@ -66,15 +66,41 @@ public class MedicalRecordController {
 
     // Lấy chi tiết hồ sơ bệnh lý, tải pdf
     @GetMapping("/{recordId}/pdf")
-    public ResponseEntity<ApiResponse<MedicalRecordPDFResponse>> getMedicalRecordDetail(@PathVariable String recordId) {
+    public ResponseEntity<ApiResponse<MedicalRecordPDFResponse>> getMedicalRecordDetailPDF(@PathVariable String recordId) {
 
-        MedicalRecordPDFResponse medicalRecordResponse = medicalRecordService.getMedicalRecordDetail(recordId);
+        MedicalRecordPDFResponse medicalRecordResponse = medicalRecordService.getMedicalRecordDetailPDF(recordId);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<MedicalRecordPDFResponse>builder()
                         .status("success")
                         .code(HttpStatus.OK.value())
                         .message("Lấy chi tiết hồ sơ bệnh lý thành công")
                         .data(medicalRecordResponse)
+                .build());
+    }
+
+    // Lấy chi tiết hồ sơ bệnh lý
+    @GetMapping("/{recordId}")
+    public ResponseEntity<ApiResponse<MedicalRecordResponse>> getMedicalRecordDetail(@PathVariable String recordId) {
+        MedicalRecordResponse medicalRecordResponse = medicalRecordService.getMedicalRecordDetail(recordId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<MedicalRecordResponse>builder()
+                .status("success")
+                .code(HttpStatus.OK.value())
+                .message("Lấy chi tiết hồ sơ bệnh lý thành công")
+                .data(medicalRecordResponse)
+                .build());
+    }
+
+    // Kiểm tra hồ sơ khám có tồn tại theo lịch hẹn khám
+    @GetMapping("/check")
+    public ResponseEntity<ApiResponse<?>> checkMedicalRecord(@RequestParam String appointmentId) {
+        String medicalRecordId = medicalRecordService.checkMedicalRecord(appointmentId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.builder()
+                        .status("success")
+                        .code(HttpStatus.OK.value())
+                        .message("Kiểm tra hồ sơ bệnh lý thành công")
+                        .data(medicalRecordId)
                 .build());
     }
 }

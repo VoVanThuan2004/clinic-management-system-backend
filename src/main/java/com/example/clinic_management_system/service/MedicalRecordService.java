@@ -13,5 +13,9 @@ public interface MedicalRecordService {
 
     Page<MedicalRecordResponse> getMedicalRecords(int page, int size, String search, String doctorId, boolean paymentStatus);
 
-    MedicalRecordPDFResponse getMedicalRecordDetail(String recordId);
+    MedicalRecordPDFResponse getMedicalRecordDetailPDF(String recordId);
+
+    MedicalRecordResponse getMedicalRecordDetail(String recordId);
+
+    String checkMedicalRecord(String appointmentId);
 }

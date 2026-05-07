@@ -128,11 +128,11 @@ public class MedicineServiceImpl implements MedicineService {
     }
 
     @Override
-    public Page<MedicineResponse> getMedicinesByCategory(String categoryId, int page, int size) {
+    public Page<MedicineResponse> getMedicinesByCategory(String categoryId, String search, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         // 1. Query lấy data
-        Page<Medicine> medicines = medicineRepository.findAllByCategoryId(categoryId, pageable);
+        Page<Medicine> medicines = medicineRepository.findAllByCategoryId(categoryId, search, pageable);
 
         // 2. Mapping data trả về
         Page<MedicineResponse> medicineResponses = medicines.map(medicineMapper::toResponse);

@@ -85,6 +85,10 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                     .medicalRecordId(medicalRecord.getMedicalRecordId())
                     .doctorName(medicalRecord.getAppointment().getDoctor().getFullName())
                     .patientName(medicalRecord.getAppointment().getPatient().getFullName())
+                    .gender(medicalRecord.getAppointment().getPatient().getGender())
+                    .phoneNumber(medicalRecord.getAppointment().getPatient().getPhoneNumber())
+                    .address(medicalRecord.getAppointment().getPatient().getAddress())
+                    .dateOfBirth(medicalRecord.getAppointment().getPatient().getDateOfBirth())
                     .symptoms(medicalRecord.getSymptoms())
                     .diagnosis(medicalRecord.getDiagnosis())
                     .notes(medicalRecord.getNotes())
@@ -96,7 +100,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Override
     @Transactional
-    public MedicalRecordPDFResponse getMedicalRecordDetail(String recordId) {
+    public MedicalRecordPDFResponse getMedicalRecordDetailPDF(String recordId) {
         // 1. Kiểm tra hồ sơ bệnh lý có hợp lệ
         Optional<MedicalRecord> medicalRecord = medicalRecordRepository.findById(recordId);
         if (medicalRecord.isEmpty()) {
@@ -122,5 +126,39 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .build();
 
         return medicalRecordPDFResponse;
+    }
+
+    @Override
+    public MedicalRecordResponse getMedicalRecordDetail(String recordId) {
+        // 1. Kiểm tra hồ sơ bệnh lý có hợp lệ
+        Optional<MedicalRecord> medicalRecord = medicalRecordRepository.findById(recordId);
+        if (medicalRecord.isEmpty()) {
+            throw new ResourceNotFoundException("Hồ sơ bệnh lý không tồn tại");
+        }
+
+        // 2. Mapping data trả về
+        return MedicalRecordResponse.builder()
+                .medicalRecordId(medicalRecord.get().getMedicalRecordId())
+                .patientName(medicalRecord.get().getAppointment().getPatient().getFullName())
+                .gender(medicalRecord.get().getAppointment().getPatient().getGender())
+                .phoneNumber(medicalRecord.get().getAppointment().getPatient().getPhoneNumber())
+                .dateOfBirth(medicalRecord.get().getAppointment().getPatient().getDateOfBirth())
+                .address(medicalRecord.get().getAppointment().getPatient().getAddress())
+                .symptoms(medicalRecord.get().getSymptoms())
+                .diagnosis(medicalRecord.get().getDiagnosis())
+                .notes(medicalRecord.get().getNotes())
+                .paymentStatus(medicalRecord.get().isPaymentStatus())
+                .build();
+    }
+
+    @Override
+    public String checkMedicalRecord(String appointmentId) {
+        // Query check medical record có tồn tại
+        Optional<MedicalRecord> medicalRecord = medicalRecordRepository.findByAppointment_AppointmentId(appointmentId);
+        if (medicalRecord.isEmpty()) {
+            throw new ResourceNotFoundException("Hồ sơ bệnh lý không tồn tại");
+        }
+
+        return medicalRecord.get().getMedicalRecordId();
     }
 }

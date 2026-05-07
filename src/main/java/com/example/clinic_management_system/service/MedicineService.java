@@ -12,5 +12,5 @@ public interface MedicineService {
 
     void deleteMedicine(String medicineId);
 
-    Page<MedicineResponse> getMedicinesByCategory(String categoryId, int page, int size);
+    Page<MedicineResponse> getMedicinesByCategory(String categoryId, String search, int page, int size);
 }

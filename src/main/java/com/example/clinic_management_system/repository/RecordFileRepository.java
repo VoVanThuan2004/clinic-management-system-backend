@@ -13,6 +13,7 @@ public interface RecordFileRepository extends JpaRepository<RecordFile, String> 
         select r
         from RecordFile r
         where r.medicalRecord.medicalRecordId = :recordId
+        order by r.uploadedAt desc
     """)
     List<RecordFile> findAllByRecordId(@Param("recordId") String recordId);
 }

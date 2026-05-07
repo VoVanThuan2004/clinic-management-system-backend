@@ -13,6 +13,10 @@ public interface MedicineRepository extends JpaRepository<Medicine, String> {
         select m
         from Medicine m
         where (:categoryId is null or m.category.categoryId = :categoryId)
+        and (:search is null or m.medicineName LIKE CONCAT('%', :search, '%'))
     """)
-    Page<Medicine> findAllByCategoryId(@Param("categoryId") String categoryId, Pageable pageable);
+    Page<Medicine> findAllByCategoryId(
+            @Param("categoryId") String categoryId,
+            @Param("search") String search,
+            Pageable pageable);
 }

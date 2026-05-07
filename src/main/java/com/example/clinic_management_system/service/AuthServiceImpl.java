@@ -123,6 +123,12 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Vui lòng đăng nhập tài khoản");
         }
 
+        // Set new password cho user
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            throw new ResourceNotFoundException("Người dùng không tồn tại");
+        }
+
         // Kiểm tra mật khẩu hiện tại có khác mật khẩu mới
         if (changePasswordRequest.getOldPassword().equals(changePasswordRequest.getNewPassword())) {
             throw new BadRequestException("Mật khẩu mới đang trùng với mật khẩu hiện tại");
@@ -133,10 +139,9 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Mật khẩu mới và mật khẩu xác nhận không khớp");
         }
 
-        // Set new password cho user
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()) {
-            throw new ResourceNotFoundException("Người dùng không tồn tại");
+        // Kiểm tra mật khẩu hiện tại có đúng
+        if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.get().getPassword())) {
+            throw new BadRequestException("Mật khẩu hiện tại không đúng");
         }
 
         user.get().setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));

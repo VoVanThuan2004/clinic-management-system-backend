@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, String> {
 
     @Query("""
@@ -34,4 +36,6 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, St
         where a.patient.patientId = :patientId and mr.orderPayment.paymentStatus = true
     """)
     Page<MedicalRecord> findAllByPatientId(@Param("patientId") String patientId, Pageable pageable);
+
+    Optional<MedicalRecord> findByAppointment_AppointmentId(String appointmentId);
 }

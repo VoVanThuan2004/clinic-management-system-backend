@@ -13,6 +13,7 @@ public class RecordFileMapper {
         return RecordFileResponse.builder()
                 .fileId(recordFile.getFileId())
                 .fileUrl(recordFile.getFileUrl())
+                .fileType(recordFile.getFileType())
                 .build();
     }
 

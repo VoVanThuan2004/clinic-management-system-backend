@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 public class RecordFileResponse {
     private String fileId;
     private String fileUrl;
+    private String fileType;
 }

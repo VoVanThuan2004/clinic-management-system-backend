@@ -67,10 +67,11 @@ public class MedicineController {
     @GetMapping("")
     public ResponseEntity<ApiResponse<Page<MedicineResponse>>> getMedicinesByCategory(
             @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "15") int size
     ) {
-        Page<MedicineResponse> medicineResponses = medicineService.getMedicinesByCategory(categoryId, page, size);
+        Page<MedicineResponse> medicineResponses = medicineService.getMedicinesByCategory(categoryId, search, page, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<Page<MedicineResponse>>builder()
                 .status("success")
