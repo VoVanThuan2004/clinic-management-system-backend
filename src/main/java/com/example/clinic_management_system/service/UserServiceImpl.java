@@ -4,9 +4,7 @@ import com.example.clinic_management_system.dto.request.DoctorUpdateRequest;
 import com.example.clinic_management_system.dto.request.UserRequest;
 import com.example.clinic_management_system.dto.request.EmployeeUpdateRequest;
 import com.example.clinic_management_system.dto.request.UserUpdateRequest;
-import com.example.clinic_management_system.dto.response.DoctorOptionResponse;
-import com.example.clinic_management_system.dto.response.UploadResult;
-import com.example.clinic_management_system.dto.response.UserResponse;
+import com.example.clinic_management_system.dto.response.*;
 import com.example.clinic_management_system.entity.DoctorDetail;
 import com.example.clinic_management_system.entity.Role;
 import com.example.clinic_management_system.entity.User;
@@ -125,6 +123,8 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<User> users = userRepository.findAllEmployees(pageable, search);
+
+        // Nếu user này là bác sĩ -> lấy thêm thông tin
         return users.map(user -> {
             return UserResponse.builder()
                     .userId(user.getUserId())
@@ -134,6 +134,7 @@ public class UserServiceImpl implements UserService {
                     .gender(user.getGender())
                     .avatarUrl(user.getAvatarUrl())
                     .role(user.getRole().getName())
+                    .dateOfBirth(user.getDateOfBirth())
                     .build();
         });
     }
@@ -275,6 +276,33 @@ public class UserServiceImpl implements UserService {
         .specialty(doctor.getDoctorDetail().getSpecialty())
         .build())
         .toList();
+    }
+
+    @Override
+    public Page<DoctorResponse> getAllDoctors(int page, int size, String search) {
+        // 1. Tạo đối tượng phân trang
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        // 2. Query data trả về
+        Page<User> doctors = userRepository.findAllDoctors(search, pageable);
+
+        // 3. Mapping data trả về
+        return doctors.map(user -> {
+            return DoctorResponse.builder()
+                    .doctorId(user.getUserId())
+                    .doctorName(user.getFullName())
+                    .email(user.getEmail())
+                    .gender(user.getGender())
+                    .avatarUrl(user.getAvatarUrl())
+                    .phoneNumber(user.getPhoneNumber())
+                    .dateOfBirth(user.getDateOfBirth())
+                    .doctorDetailResponse(DoctorDetailResponse.builder()
+                            .biography(user.getDoctorDetail().getBiography())
+                            .specialty(user.getDoctorDetail().getSpecialty())
+                            .experienceYears(user.getDoctorDetail().getExperienceYears())
+                            .build())
+                    .build();
+        });
     }
 
 }

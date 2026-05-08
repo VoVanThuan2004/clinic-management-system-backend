@@ -18,4 +18,11 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
             @Param("userId") String userId,
             Pageable pageable
     );
+
+    @Query("""
+        select count(n)
+        from Notification n
+        where n.user.userId = :userId and n.isRead = false
+    """)
+    Long countNotificationByUser(@Param("userId") String userId);
 }

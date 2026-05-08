@@ -5,6 +5,7 @@ import com.example.clinic_management_system.dto.request.UserRequest;
 import com.example.clinic_management_system.dto.request.EmployeeUpdateRequest;
 import com.example.clinic_management_system.dto.request.UserUpdateRequest;
 import com.example.clinic_management_system.dto.response.DoctorOptionResponse;
+import com.example.clinic_management_system.dto.response.DoctorResponse;
 import com.example.clinic_management_system.dto.response.UserResponse;
 
 import java.util.List;
@@ -26,4 +27,6 @@ public interface UserService {
     void updateUser(String id, UserUpdateRequest userUpdateRequest, MultipartFile file);
 
     List<DoctorOptionResponse> getAllDoctorsOption(String search);
+
+    Page<DoctorResponse> getAllDoctors(int page, int size, String search);
 }

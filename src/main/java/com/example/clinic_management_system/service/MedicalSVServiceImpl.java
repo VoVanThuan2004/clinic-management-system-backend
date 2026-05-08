@@ -90,7 +90,7 @@ public class MedicalSVServiceImpl implements MedicalSVService {
     public Page<MedicalServiceResponse> findAllServices(int page, int size, String search) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        Page<MedicalServiceEntity> medicalServiceEntities = medicalServiceRepository.findAll(pageable);
+        Page<MedicalServiceEntity> medicalServiceEntities = medicalServiceRepository.findAllServices(search, pageable);
 
         return medicalServiceEntities
                 .map(medicalServiceEntity -> {

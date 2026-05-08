@@ -1,10 +1,7 @@
 package com.example.clinic_management_system.service;
 
 import com.example.clinic_management_system.dto.request.AppointmentRequest;
-import com.example.clinic_management_system.dto.response.AppointmentDetailPDFResponse;
-import com.example.clinic_management_system.dto.response.AppointmentDetailResponse;
-import com.example.clinic_management_system.dto.response.AppointmentResponse;
-import com.example.clinic_management_system.dto.response.BookedSlotDTO;
+import com.example.clinic_management_system.dto.response.*;
 import com.example.clinic_management_system.entity.*;
 import com.example.clinic_management_system.exception.BadRequestException;
 import com.example.clinic_management_system.exception.ResourceNotFoundException;
@@ -106,13 +103,17 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .build());
 
         // 10. Gửi thông báo
-//        notificationSocketService.sendToDoctor(doctorExist.get().getUserId(), NotificationRequest.builder()
-//                        .type(notification.getType())
-//                        .title(notification.getTitle())
-//                        .message(notification.getMessage())
-//                        .isRead(notification.isRead())
-//                        .createdAt(notification.getCreatedAt())
-//                .build());
+        notificationSocketService.sendNotificationToDoctor(
+                doctorExist.get().getUserId(),
+                NotificationResponse.builder()
+                        .notificationId(notification.getNotificationId())
+                        .type(notification.getType())
+                        .title(notification.getTitle())
+                        .message(notification.getMessage())
+                        .isRead(notification.isRead())
+                        .createdAt(Instant.now())
+                        .build()
+        );
     }
 
     @Override

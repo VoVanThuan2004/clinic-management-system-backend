@@ -3,11 +3,12 @@ package com.example.clinic_management_system.service;
 import com.example.clinic_management_system.dto.request.RoomRequest;
 import com.example.clinic_management_system.dto.response.RoomOptionResponse;
 import com.example.clinic_management_system.dto.response.RoomResponse;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface RoomService {
-    List<RoomResponse> getAllRooms();
+    Page<RoomResponse> getAllRooms(int page, int size, String search);
 
     List<RoomOptionResponse> getRoomOptions();
 

@@ -12,19 +12,21 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
 
-        // nơi BE gửi message xuống client
+        // Khai báo 2 prefix cho message broker: /topic (broadcast) và /queue (point-to-point)
+        // /queue là nơi sẽ dùng để gửi tin nhắn đến một user cụ thể
         registry.enableSimpleBroker("/topic", "/queue");
 
         // prefix client gửi lên server
         registry.setApplicationDestinationPrefixes("/app");
 
-        // prefix dành riêng cho user
-        registry.setUserDestinationPrefix("/user");
+        // Prefix cho việc gửi tin nhắn đến một user cụ thể
+        // Spring sẽ tự động hiểu và chuyển đổi thành "/queue/[unique-session-id]"
+//        registry.setUserDestinationPrefix("/user");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-
+        // Khai báo endpoint để client kết nối tới
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
                 .withSockJS(); // fallback nếu browser không support WS

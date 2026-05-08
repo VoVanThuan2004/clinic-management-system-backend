@@ -7,4 +7,8 @@ public interface NotificationService {
     Page<NotificationResponse> getAllNotifications(int page, int size, String userId);
 
     void markReadNotification(String id);
+
+    Long getTotalNotifications(String userId);
+
+    Boolean deleteNotification(String id);
 }

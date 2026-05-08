@@ -41,6 +41,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/v1/roles/**").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/refresh-token/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/ws").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

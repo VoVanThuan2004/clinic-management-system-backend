@@ -9,6 +9,10 @@ import com.example.clinic_management_system.exception.ResourceNotFoundException;
 import com.example.clinic_management_system.mapper.RoomMapper;
 import com.example.clinic_management_system.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,11 +25,14 @@ public class RoomServiceImpl implements RoomService {
     private final RoomMapper roomMapper;
 
     @Override
-    public List<RoomResponse> getAllRooms() {
-        List<Room> rooms = roomRepository.findAllRooms();
+    public Page<RoomResponse> getAllRooms(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        List<RoomResponse> roomResponses = roomMapper.toResponseList(rooms);
-        return roomResponses;
+        // Query data
+        Page<Room> rooms = roomRepository.findAllRooms(search, pageable);
+
+        // Mapping data trả về
+        return rooms.map(roomMapper::toResponse);
     }
 
     @Override

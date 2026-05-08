@@ -28,11 +28,12 @@ public class MedicalServiceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.builder()
                         .status("success")
                         .code(HttpStatus.CREATED.value())
-                        .message("Thêm dịch vụ thành công")
+                        .message("Thêm dịch vụ khám thành công")
                 .build());
     }
 
     @PutMapping("/{serviceId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<?>> updateService (@PathVariable String serviceId,
                                                          @RequestBody MedicalServiceRequest medicalServiceRequest
     ) {
@@ -46,6 +47,7 @@ public class MedicalServiceController {
     }
 
     @DeleteMapping("/{serviceId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<?>> deleteService (@PathVariable String serviceId) {
         medicalSVService.deleteService(serviceId);
 

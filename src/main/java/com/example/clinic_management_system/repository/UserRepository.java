@@ -39,7 +39,17 @@ public interface UserRepository extends JpaRepository<User, String> {
             :search is null
             or u.fullName ilike concat('%', :search, '%')
             or u.doctorDetail.specialty ilike concat('%', :search, '%')
-        )      
+        )
     """)
     List<User> findAllDoctorsOption(@Param("search") String search);
+
+
+    // Lấy danh sách bác sĩ
+    @Query("""
+        select d
+        from User d
+        where (d.role.name = 'DOCTOR')
+        and (d.fullName ilike concat('%', :search, '%') or d.doctorDetail.specialty ilike concat('%', :search, '%'))
+    """)
+    Page<User> findAllDoctors(String search, Pageable pageable);
 }

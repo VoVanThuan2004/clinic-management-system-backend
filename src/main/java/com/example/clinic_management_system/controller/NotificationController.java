@@ -25,12 +25,14 @@ public class NotificationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-         String userId = ((CustomUserDetail) auth.getPrincipal()).getId();
+        CustomUserDetail customUserDetail = (CustomUserDetail) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
 
-         Page<NotificationResponse> notificationResponses = notificationService.getAllNotifications(page, size, userId);
+        String userId = customUserDetail.getUserId();
 
-         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<Page<NotificationResponse>>builder()
+        Page<NotificationResponse> notificationResponses = notificationService.getAllNotifications(page, size, userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<Page<NotificationResponse>>builder()
                          .status("success")
                          .code(HttpStatus.OK.value())
                          .message("Lấy danh sách thông báo thành công")
@@ -41,13 +43,41 @@ public class NotificationController {
     // Đánh dấu đã đọc thông báo
     @PutMapping("/{id}/read")
     public ResponseEntity<ApiResponse<?>> markReadNotification(@PathVariable("id") String id) {
-
         notificationService.markReadNotification(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.builder()
                         .status("success")
                         .code(HttpStatus.OK.value())
                         .message("Đánh dấu thông báo đã đọc")
+                .build());
+    }
+
+    // Xóa thông báo
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<?>> deleteNotification(@PathVariable String id) {
+        Boolean isRead = notificationService.deleteNotification(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.builder()
+                .status("success")
+                .code(HttpStatus.OK.value())
+                .message("Đã xóa thông báo thành công")
+                .data(isRead)
+                .build());
+    }
+
+    // Lấy tổng số thông báo của 1 user
+    @GetMapping("/total")
+    public ResponseEntity<ApiResponse<?>> getTotalNotifications() {
+        CustomUserDetail customUserDetail = (CustomUserDetail) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+
+        Long totalNotifications = notificationService.getTotalNotifications(customUserDetail.getUserId());
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.builder()
+                        .status("success")
+                        .code(HttpStatus.OK.value())
+                        .message("Lấy tổng số thông báo của người dùng")
+                        .data(totalNotifications)
                 .build());
     }
 }

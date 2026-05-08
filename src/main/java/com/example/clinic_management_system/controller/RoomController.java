@@ -6,6 +6,7 @@ import com.example.clinic_management_system.dto.response.RoomOptionResponse;
 import com.example.clinic_management_system.dto.response.RoomResponse;
 import com.example.clinic_management_system.service.RoomService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,10 +22,14 @@ public class RoomController {
 
     @GetMapping("")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<List<RoomResponse>>> getAllRooms() {
-        List<RoomResponse> roomResponses = roomService.getAllRooms();
+    public ResponseEntity<ApiResponse<Page<RoomResponse>>> getAllRooms(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String search
+    ) {
+        Page<RoomResponse> roomResponses = roomService.getAllRooms(page, size, search);
 
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<List<RoomResponse>>builder()
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<Page<RoomResponse>>builder()
                         .status("success")
                         .code(HttpStatus.OK.value())
                         .message("Lấy danh sách phòng khám")

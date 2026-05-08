@@ -6,6 +6,7 @@ import com.example.clinic_management_system.dto.request.EmployeeUpdateRequest;
 import com.example.clinic_management_system.dto.request.UserUpdateRequest;
 import com.example.clinic_management_system.dto.response.ApiResponse;
 import com.example.clinic_management_system.dto.response.DoctorOptionResponse;
+import com.example.clinic_management_system.dto.response.DoctorResponse;
 import com.example.clinic_management_system.dto.response.UserResponse;
 import com.example.clinic_management_system.security.CustomUserDetail;
 import com.example.clinic_management_system.service.UserService;
@@ -66,6 +67,7 @@ public class UserController {
 
     // Lấy danh sách nhân viên
     @GetMapping("/employees")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Page<UserResponse>>> getAllEmployees(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -80,6 +82,24 @@ public class UserController {
                         .data(userResponses)
                         .build()
         );
+    }
+
+    // Lấy danh sách bác sĩ
+    @GetMapping("/doctors")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Page<DoctorResponse>>> getAllDoctors(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String search
+    ) {
+        Page<DoctorResponse> doctorResponses = userService.getAllDoctors(page, size, search);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<Page<DoctorResponse>>builder()
+                        .status("success")
+                        .code(HttpStatus.OK.value())
+                        .message("Lấy danh sách bác sĩ")
+                        .data(doctorResponses)
+                .build());
     }
 
     // Cập nhật thông tin profile

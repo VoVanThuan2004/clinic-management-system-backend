@@ -15,6 +15,7 @@ public class RoomMapper {
                 .roomName(room.getRoomName())
                 .createdAt(room.getCreatedAt())
                 .updatedAt(room.getUpdatedAt())
+                .isActive(room.isActive())
                 .build();
     }
 
