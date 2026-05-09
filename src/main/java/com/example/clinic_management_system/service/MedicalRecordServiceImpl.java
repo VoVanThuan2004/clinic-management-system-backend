@@ -74,7 +74,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
-    public Page<MedicalRecordResponse> getMedicalRecords(int page, int size, String search, String doctorId, boolean paymentStatus) {
+    public Page<MedicalRecordResponse> getMedicalRecords(int page, int size, String search, String doctorId, Boolean paymentStatus) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<MedicalRecord> medicalRecords = medicalRecordRepository.findAllMedicalRecords(pageable, search, doctorId, paymentStatus);
@@ -109,6 +109,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
         // 2. Mapping data trả về
         PrescriptionResponse prescriptionResponse = prescriptionMapper.toResponse(medicalRecord.get().getPrescription());
+        prescriptionResponse.setServiceName(medicalRecord.get().getAppointment().getMedicalServiceEntity().getServiceName());
+        prescriptionResponse.setServiceFee(medicalRecord.get().getAppointment().getMedicalServiceEntity().getPrice());
 
         MedicalRecordPDFResponse medicalRecordPDFResponse = MedicalRecordPDFResponse.builder()
                 .patientName(medicalRecord.get().getAppointment().getPatient().getFullName())
@@ -123,6 +125,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .notes(medicalRecord.get().getNotes())
                 .prescriptions(prescriptionResponse)
                 .recordFiles(recordFileMapper.toResponseList(medicalRecord.get().getRecordFiles()))
+                .paymentMethod(medicalRecord.get().getOrderPayment().getPaymentMethod())
                 .build();
 
         return medicalRecordPDFResponse;

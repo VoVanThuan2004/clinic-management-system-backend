@@ -3,6 +3,7 @@ package com.example.clinic_management_system.mapper;
 import com.example.clinic_management_system.dto.request.OrderPaymentRequest;
 import com.example.clinic_management_system.dto.response.OrderPaymentResponse;
 import com.example.clinic_management_system.entity.OrderPayment;
+import com.example.clinic_management_system.utils.PaymentMethodConstant;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -16,8 +17,8 @@ public class OrderPaymentMapper {
                 .totalMedicine(orderPaymentRequest.getTotalMedicine())
                 .totalAmount(orderPaymentRequest.getTotalAmount())
                 .paymentMethod(orderPaymentRequest.getPaymentMethod())
-                .paymentStatus(orderPaymentRequest.getPaymentMethod().equals("cash"))
-                .paidAt(orderPaymentRequest.getPaymentMethod().equals("cash") ? Instant.now() : null)
+                .paymentStatus(orderPaymentRequest.getPaymentMethod().equals(PaymentMethodConstant.CASH))
+                .paidAt(orderPaymentRequest.getPaymentMethod().equals(PaymentMethodConstant.CASH) ? Instant.now() : null)
                 .build();
     }
 

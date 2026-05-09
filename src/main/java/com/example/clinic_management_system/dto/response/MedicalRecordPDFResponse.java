@@ -1,5 +1,6 @@
 package com.example.clinic_management_system.dto.response;
 
+import com.example.clinic_management_system.utils.PaymentMethodConstant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,4 +34,6 @@ public class MedicalRecordPDFResponse {
 
     // Thông tin file upload
     private List<RecordFileResponse> recordFiles;
+
+    private String paymentMethod;
 }

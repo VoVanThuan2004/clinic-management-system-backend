@@ -118,9 +118,9 @@ public class AppointmentController {
     // Lấy danh sách slots trống của 1 bác sĩ (thời gian, phòng khám)
     @GetMapping("/booked-slots")
     public ResponseEntity<ApiResponse<List<BookedSlotDTO>>> getBookedSlots(
-            @RequestParam(required = false) String doctorId,
-            @RequestParam(required = false) LocalDate date,
-            @RequestParam(required = false) String roomId
+            @RequestParam(defaultValue = "") String doctorId,
+            @RequestParam(defaultValue = "") LocalDate date,
+            @RequestParam(defaultValue = "") String roomId
     ) {
 
         List<BookedSlotDTO> result = appointmentService.getBookedSlots(doctorId, date, roomId);

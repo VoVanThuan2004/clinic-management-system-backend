@@ -11,7 +11,7 @@ public interface MedicalRecordService {
 
     void updateMedicalRecord(String medicalRecordId, MedicalRecordUpdateRequest medicalRecordUpdateRequest);
 
-    Page<MedicalRecordResponse> getMedicalRecords(int page, int size, String search, String doctorId, boolean paymentStatus);
+    Page<MedicalRecordResponse> getMedicalRecords(int page, int size, String search, String doctorId, Boolean paymentStatus);
 
     MedicalRecordPDFResponse getMedicalRecordDetailPDF(String recordId);
 

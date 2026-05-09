@@ -88,7 +88,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         }
 
         // 2. Kiểm tra mã token hiện tại có tồn tại
-        Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findByRefreshToken(passwordEncoder.encode(refreshToken));
+        Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findByRefreshToken(DigestUtils.sha256Hex(refreshToken));
         if (refreshTokenOptional.isEmpty()) {
             throw new ResourceNotFoundException("Mã refresh token không hợp lệ");
         }

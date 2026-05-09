@@ -11,7 +11,7 @@ import com.example.clinic_management_system.mapper.OrderPaymentMapper;
 import com.example.clinic_management_system.repository.MedicalRecordRepository;
 import com.example.clinic_management_system.repository.MedicineRepository;
 import com.example.clinic_management_system.repository.OrderPaymentRepository;
-import com.example.clinic_management_system.repository.PrescriptionItemRepository;
+import com.example.clinic_management_system.utils.PaymentMethodConstant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +25,6 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
     private final OrderPaymentRepository orderPaymentRepository;
     private final MedicalRecordRepository medicalRecordRepository;
     private final OrderPaymentMapper orderPaymentMapper;
-    private final PrescriptionItemRepository prescriptionItemRepository;
     private final MedicineRepository medicineRepository;
 
     @Override
@@ -38,13 +37,13 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
         }
 
         // Trừ tồn kho
-        if (orderPaymentRequest.getPaymentMethod().equals("cash")) {
+        if (orderPaymentRequest.getPaymentMethod().equals(PaymentMethodConstant.CASH)) {
             List<PrescriptionItem> items = medicalRecord.get().getPrescription().getPrescriptionItems();
             for (PrescriptionItem item: items) {
                 int currentStock = item.getMedicine().getStockQuantity();
                 int quantity = item.getQuantity();
                 if (currentStock < quantity) {
-                    throw new BadRequestException("Không đủ thuốc trong kho");
+                    throw new BadRequestException("Thuốc " + item.getMedicine().getMedicineName() + " trong hồ sơ bệnh lý đã hết hàng");
                 }
                 item.getMedicine().setStockQuantity(currentStock - quantity);
                 medicineRepository.save(item.getMedicine());
@@ -55,10 +54,11 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
         // 2. Mapping data
         OrderPayment orderPayment = orderPaymentMapper.toEntity(orderPaymentRequest);
         orderPayment.setMedicalRecord(medicalRecord.get());
+        orderPayment.setServiceName(medicalRecord.get().getAppointment().getMedicalServiceEntity().getServiceName());
         orderPayment = orderPaymentRepository.save(orderPayment);
 
         // Cập nhật trạng thái hồ sơ bệnh lý
-        if (orderPaymentRequest.getPaymentMethod().equals("cash")) {
+        if (orderPaymentRequest.getPaymentMethod().equals(PaymentMethodConstant.CASH)) {
             medicalRecord.get().setPaymentStatus(true);
             medicalRecordRepository.save(medicalRecord.get());
         }
@@ -75,8 +75,6 @@ public class OrderPaymentServiceImpl implements OrderPaymentService {
         }
 
         // 2. Mapping data trả về
-        OrderPaymentResponse orderPaymentResponse = orderPaymentMapper.toResponse(orderPayment.get());
-
-        return orderPaymentResponse;
+        return orderPaymentMapper.toResponse(orderPayment.get());
     }
 }

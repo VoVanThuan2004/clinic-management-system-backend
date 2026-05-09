@@ -52,7 +52,7 @@ public class MedicalRecordController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String doctorId,
-            @RequestParam(required = false) boolean paymentStatus
+            @RequestParam(required = false) Boolean paymentStatus
     ) {
         Page<MedicalRecordResponse> medicalRecordResponses = medicalRecordService.getMedicalRecords(page, size, search, doctorId, paymentStatus);
 

@@ -25,7 +25,7 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, St
             Pageable pageable,
             @Param("search") String search,
             @Param("doctorId") String doctorId,
-            @Param("paymentStatus") boolean paymentStatus
+            @Param("paymentStatus") Boolean paymentStatus
     );
 
 
