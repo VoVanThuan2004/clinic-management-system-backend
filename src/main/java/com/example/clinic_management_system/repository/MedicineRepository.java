@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface MedicineRepository extends JpaRepository<Medicine, String> {
 
     @Query("""
@@ -19,4 +21,12 @@ public interface MedicineRepository extends JpaRepository<Medicine, String> {
             @Param("categoryId") String categoryId,
             @Param("search") String search,
             Pageable pageable);
+
+
+    @Query("""
+        select count(m) > 0
+        from Medicine m
+        where m.category.categoryId = :categoryId
+    """)
+    boolean existsByCategoryId(@Param("categoryId") String categoryId);
 }

@@ -14,7 +14,7 @@ public interface CategoryService {
 
     void deleteCategory(String categoryId);
 
-    Page<CategoryResponse> getAllCategories(int page, int size);
+    Page<CategoryResponse> getAllCategories(int page, int size, String search);
 
     List<CategoryOptionResponse> getAllCategoriesOptions();
 }

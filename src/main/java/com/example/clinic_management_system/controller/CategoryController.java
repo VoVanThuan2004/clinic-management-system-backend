@@ -60,9 +60,10 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Page<CategoryResponse>>> getAllCategories(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String search
     ) {
-        Page<CategoryResponse> categoryResponses = categoryService.getAllCategories(page, size);
+        Page<CategoryResponse> categoryResponses = categoryService.getAllCategories(page, size, search);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<Page<CategoryResponse>>builder()
                 .status("success")
