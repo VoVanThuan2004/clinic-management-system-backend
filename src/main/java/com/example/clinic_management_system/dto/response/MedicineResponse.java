@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor @Builder
 public class MedicineResponse {
+    private String categoryId;
     private String medicineId;
     private String medicineName;
     private Double sellingPrice;

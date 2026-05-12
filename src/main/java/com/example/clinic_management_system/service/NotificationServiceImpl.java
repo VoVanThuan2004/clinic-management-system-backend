@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -70,9 +71,18 @@ public class NotificationServiceImpl implements NotificationService {
             throw new ResourceNotFoundException("Thông báo không tồn tại");
         }
 
+        Boolean isRead = notification.get().isRead();
+
         // 2. Xóa thông báo
         notificationRepository.delete(notification.get());
 
-        return notification.get().isRead();
+        return isRead;
+    }
+
+    @Override
+    @Transactional
+    public int markReadAllNotifications(String userId) {
+        // 2. Gọi query sql update tất cả thông báo chưa đọc
+        return notificationRepository.markAllAsReadByUserId(userId);
     }
 }

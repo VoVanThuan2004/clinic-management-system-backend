@@ -11,4 +11,6 @@ public interface NotificationService {
     Long getTotalNotifications(String userId);
 
     Boolean deleteNotification(String id);
+
+    int markReadAllNotifications(String userId);
 }

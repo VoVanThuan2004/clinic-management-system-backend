@@ -52,6 +52,23 @@ public class NotificationController {
                 .build());
     }
 
+    // Đánh dấu đã đọc tất cả thông báo
+    @PutMapping("/read-all")
+    public ResponseEntity<ApiResponse<?>> markReadAllNotifications() {
+        CustomUserDetail customUserDetail = (CustomUserDetail) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        String userId = customUserDetail.getUserId();
+
+        int updatedCount = notificationService.markReadAllNotifications(userId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.builder()
+                .status("success")
+                .code(HttpStatus.OK.value())
+                .message("Đánh dấu đã đọc tất cả thông báo")
+                        .data(updatedCount)
+                .build());
+    }
+
     // Xóa thông báo
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<?>> deleteNotification(@PathVariable String id) {

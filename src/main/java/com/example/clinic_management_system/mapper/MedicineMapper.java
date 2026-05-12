@@ -22,6 +22,7 @@ public class MedicineMapper {
 
     public MedicineResponse toResponse(Medicine medicine) {
         return MedicineResponse.builder()
+                .categoryId(medicine.getCategory().getCategoryId())
                 .medicineId(medicine.getMedicineId())
                 .medicineName(medicine.getMedicineName())
                 .sellingPrice(medicine.getSellingPrice())
