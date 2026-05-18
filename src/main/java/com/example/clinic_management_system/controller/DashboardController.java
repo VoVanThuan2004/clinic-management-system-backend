@@ -3,6 +3,7 @@ package com.example.clinic_management_system.controller;
 import com.example.clinic_management_system.dto.response.ApiResponse;
 import com.example.clinic_management_system.dto.response.RevenueAndProfitStatsDTO;
 import com.example.clinic_management_system.dto.response.TodayStatisticsDTO;
+import com.example.clinic_management_system.dto.response.TopMedicineDTO;
 import com.example.clinic_management_system.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,24 @@ public class DashboardController {
                         .code(HttpStatus.OK.value())
                         .message("Thống kê doanh thu, lợi nhuận theo thời gian")
                         .data(revenueAndProfitStats)
+                .build());
+    }
+
+    @GetMapping("/top-medicine")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<TopMedicineDTO>>> getTopMedicines(
+            @RequestParam LocalDate start,
+            @RequestParam LocalDate end,
+            @RequestParam(defaultValue = "5") int limit
+    ) {
+
+        List<TopMedicineDTO> topSellingMedicines = dashboardService.getTopSellingMedicines(start, end, limit);
+
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<List<TopMedicineDTO>>builder()
+                .status("success")
+                .code(HttpStatus.OK.value())
+                .message("Thống kê top các loại thuốc bán chạy")
+                .data(topSellingMedicines)
                 .build());
     }
 }

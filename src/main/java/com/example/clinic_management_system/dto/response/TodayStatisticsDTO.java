@@ -1,17 +1,14 @@
 package com.example.clinic_management_system.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Data
+@Getter
 @AllArgsConstructor @NoArgsConstructor
 @Builder
 public class TodayStatisticsDTO {
-    private BigDecimal totalRevenue;
     private Long totalPatients;
+    private BigDecimal totalRevenue;
 
 }

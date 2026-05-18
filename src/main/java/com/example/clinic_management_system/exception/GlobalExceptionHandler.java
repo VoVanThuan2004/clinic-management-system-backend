@@ -55,6 +55,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleException(Exception e) {
+        e.printStackTrace();
+        System.out.println(e);
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .status("error")
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.value())

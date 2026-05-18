@@ -12,7 +12,7 @@ import java.time.Instant;
 import java.util.List;
 
 @Entity
-@Table(name = "medical-record")
+@Table(name = "medical_record")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor @Builder

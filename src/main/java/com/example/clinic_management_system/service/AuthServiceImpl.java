@@ -39,8 +39,6 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Email không hợp lệ");
         }
 
-        System.out.println("User mk: " + user.get().getPassword());
-
         // Kiểm tra password
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.get().getPassword())) {
             throw new BadRequestException("Mật khẩu không hợp lệ");

@@ -50,7 +50,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         // 2. Tạo mã refresh token
         refreshTokenRepository.save(RefreshToken.builder()
                         .refreshToken(DigestUtils.sha256Hex(refreshToken))
-                        .userAgent(userAgent)
+                            .userAgent(userAgent)
                         .ipAddress(ipAddress)
                         .expiredAt(Instant.now().plus(Duration.ofSeconds(TokenConstants.REFRESH_TOKEN_EXPIRATION)))
                         .user(user.get())

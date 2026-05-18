@@ -1,6 +1,5 @@
 package com.example.clinic_management_system.service;
 
-import com.example.clinic_management_system.dto.request.RefreshTokenRequest;
 import com.example.clinic_management_system.dto.response.RefreshTokenResponse;
 
 public interface RefreshTokenService {

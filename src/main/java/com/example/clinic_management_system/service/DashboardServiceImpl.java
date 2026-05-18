@@ -2,6 +2,7 @@ package com.example.clinic_management_system.service;
 
 import com.example.clinic_management_system.dto.response.RevenueAndProfitStatsDTO;
 import com.example.clinic_management_system.dto.response.TodayStatisticsDTO;
+import com.example.clinic_management_system.dto.response.TopMedicineDTO;
 import com.example.clinic_management_system.repository.DashboardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,50 +30,143 @@ public class DashboardServiceImpl implements DashboardService {
         Instant start = todayUTC.atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant end = todayUTC.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
-        Object[] totalStats = dashboardRepository.getTodayStatisticsRaw(start, end);
+        Long totalPatients =
+                dashboardRepository.countTodayPatients(start, end);
+
+        BigDecimal serviceRevenue =
+                dashboardRepository.getServiceRevenue(start, end);
+
+        BigDecimal medicineRevenue =
+                dashboardRepository.getMedicineRevenue(start, end);
+
+        BigDecimal totalRevenue =
+                serviceRevenue.add(medicineRevenue);
 
         return TodayStatisticsDTO.builder()
-                .totalPatients(((Number) totalStats[0]).longValue())
-                .totalRevenue((BigDecimal) totalStats[1])
+                .totalPatients(totalPatients)
+                .totalRevenue(totalRevenue)
                 .build();
     }
 
     @Override
-    public List<RevenueAndProfitStatsDTO> getRevenueAndProfitStatistic(LocalDate startTime, LocalDate endTime, String groupBy) {
-        // Convert time sang UTC
+    public List<RevenueAndProfitStatsDTO> getRevenueAndProfitStatistic(
+            LocalDate startTime,
+            LocalDate endTime,
+            String groupBy
+    ) {
+
         Instant start = startTime
                 .atStartOfDay(ZoneOffset.UTC)
                 .toInstant();
 
         Instant end = endTime
-                .atTime(23,59,59)
+                .atTime(23, 59, 59)
                 .atZone(ZoneOffset.UTC)
                 .toInstant();
 
-        // Lấy data trả về
-        List<Object[]> revenueRows = dashboardRepository.getRevenueStats(start, end, groupBy);
-        List<Object[]> profitRows = dashboardRepository.getProfitStats(start, end, groupBy);
+        List<String> allowed = List.of(
+                "day",
+                "week",
+                "month",
+                "quarter",
+                "year"
+        );
+
+        if (!allowed.contains(groupBy)) {
+            throw new IllegalArgumentException("Invalid groupBy");
+        }
+
+        List<Object[]> revenueRows =
+                dashboardRepository.getRevenueStats(start, end, groupBy);
+
+        List<Object[]> profitRows =
+                dashboardRepository.getProfitStats(start, end, groupBy);
 
         Map<String, RevenueAndProfitStatsDTO> map = new TreeMap<>();
 
-        // Duyệt revenues
-        for (Object[] r: revenueRows) {
-            String period = (String) r[0];
-            BigDecimal revenue = (BigDecimal) r[1];
+        // Revenue
+        for (Object[] r : revenueRows) {
 
-            map.put(period, new RevenueAndProfitStatsDTO(period, revenue, BigDecimal.ZERO));
+            String period = (String) r[0];
+
+            BigDecimal revenue =
+                    r[1] != null
+                            ? new BigDecimal(r[1].toString())
+                            : BigDecimal.ZERO;
+
+            map.put(
+                    period,
+                    new RevenueAndProfitStatsDTO(
+                            period,
+                            revenue,
+                            BigDecimal.ZERO
+                    )
+            );
         }
 
-        // Duyệt profits
-        for (Object[] r: profitRows) {
+        // Profit
+        for (Object[] r : profitRows) {
+
             String period = (String) r[0];
-            BigDecimal profit = (BigDecimal) r[1];
 
-            map.computeIfAbsent(period, p -> new RevenueAndProfitStatsDTO(period, BigDecimal.ZERO, BigDecimal.ZERO))
-                    .setProfit(profit);
+            BigDecimal profit =
+                    r[1] != null
+                            ? new BigDecimal(r[1].toString())
+                            : BigDecimal.ZERO;
+
+            map.computeIfAbsent(
+                    period,
+                    p -> new RevenueAndProfitStatsDTO(
+                            p,
+                            BigDecimal.ZERO,
+                            BigDecimal.ZERO
+                    )
+            ).setProfit(profit);
         }
-
 
         return new ArrayList<>(map.values());
+    }
+
+    @Override
+    public List<TopMedicineDTO> getTopSellingMedicines(LocalDate start, LocalDate end, int limit) {
+        Instant startTime = start
+                .atStartOfDay(ZoneOffset.UTC)
+                .toInstant();
+
+        Instant endTime = end
+                .atTime(23, 59, 59)
+                .atZone(ZoneOffset.UTC)
+                .toInstant();
+
+        if (limit <= 0) {
+            limit = 10;
+        }
+
+        List<Object[]> rows =
+                dashboardRepository.getTopSellingMedicines(startTime, endTime, limit);
+
+        List<TopMedicineDTO> result = new ArrayList<>();
+
+        for (Object[] r : rows) {
+
+            String medicineId =
+                    ((String) r[0]);
+
+            String medicineName =
+                    (String) r[1];
+
+            Long totalSold =
+                    ((Number) r[2]).longValue();
+
+            result.add(
+                    new TopMedicineDTO(
+                            medicineId,
+                            medicineName,
+                            totalSold
+                    )
+            );
+        }
+
+        return result;
     }
 }
