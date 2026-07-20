@@ -32,25 +32,6 @@ Hệ thống quản lý phòng khám - Backend API xây dựng với Spring Boot
 - **Upload file** lên Cloudinary
 - **Dashboard** thống kê
 
-## Công nghệ sử dụng
-
-- **Java 19** + **Spring Boot 4.0.5**
-- **Spring Security** + **JWT** — xác thực & phân quyền
-- **Spring Data JPA** — ORM với Hibernate
-- **Spring WebSocket** — thông báo real-time
-- **MySQL 8** — cơ sở dữ liệu
-- **Cloudinary** — lưu trữ file ảnh
-- **Lombok** — giảm boilerplate code
-- **Maven** — build tool
-
-## Vai trò (Roles)
-
-| Role | Mô tả |
-|------|-------|
-| **Admin** | Quản trị hệ thống, quản lý nhân viên & bác sĩ, xem dashboard |
-| **Bác sĩ** | Khám bệnh, tạo đơn thuốc, xem hồ sơ bệnh án |
-| **Nhân viên** | Tiếp nhận bệnh nhân, đặt lịch hẹn, thanh toán |
-
 ## Yêu cầu
 
 - **Java 19**
@@ -80,87 +61,151 @@ Server chạy tại `http://localhost:8080`.
 
 ## API Endpoints
 
-### Authentication
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| POST | `/api/auth/login` | Đăng nhập |
-| POST | `/api/auth/refresh` | Refresh token |
-| POST | `/api/auth/logout` | Đăng xuất |
+Base path: `/api/v1`
 
-### Users
+### Authentication (`/api/v1/auth`)
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/users` | Danh sách user |
-| POST | `/api/users` | Tạo user |
-| PUT | `/api/users/{id}` | Cập nhật user |
-| DELETE | `/api/users/{id}` | Xóa user |
+| POST | `/login` | Đăng nhập |
+| POST | `/logout` | Đăng xuất |
+| POST | `/v2/logout` | Đăng xuất (cookie) |
+| POST | `/change-password` | Đổi mật khẩu |
 
-### Patients
+### Refresh Token (`/api/v1/auth/refresh-token`)
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/patients` | Danh sách bệnh nhân |
-| POST | `/api/patients` | Thêm bệnh nhân |
-| PUT | `/api/patients/{id}` | Cập nhật |
-| DELETE | `/api/patients/{id}` | Xóa |
+| POST | `` | Refresh token (cookie) |
 
-### Appointments
+### Users (`/api/v1/users`)
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/appointments` | Danh sách lịch hẹn |
-| POST | `/api/appointments` | Tạo lịch hẹn |
-| PUT | `/api/appointments/{id}` | Cập nhật |
-| DELETE | `/api/appointments/{id}` | Xóa |
+| GET | `` | Lấy profile |
+| POST | `` | Tạo user (Admin) |
+| GET | `/employees` | Danh sách nhân viên (Admin) |
+| GET | `/doctors` | Danh sách bác sĩ (Admin) |
+| GET | `/doctors/select` | Danh sách bác sĩ (options) |
+| PUT | `/{id}` | Cập nhật profile |
+| PUT | `/employees/{id}` | Cập nhật nhân viên |
+| PUT | `/doctors/{id}` | Cập nhật bác sĩ |
 
-### Medical Records
+### Roles (`/api/v1/roles`)
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/medical-records` | Danh sách hồ sơ |
-| POST | `/api/medical-records` | Tạo hồ sơ |
-| PUT | `/api/medical-records/{id}` | Cập nhật |
-| DELETE | `/api/medical-records/{id}` | Xóa |
+| GET | `` | Danh sách vai trò |
+| GET | `/{roleId}` | Chi tiết vai trò |
 
-### Prescriptions
+### Patients (`/api/v1/patients`)
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/prescriptions` | Danh sách đơn thuốc |
-| POST | `/api/prescriptions` | Tạo đơn thuốc |
-| PUT | `/api/prescriptions/{id}` | Cập nhật |
-| DELETE | `/api/prescriptions/{id}` | Xóa |
+| GET | `` | Danh sách bệnh nhân (pagination + search) |
+| POST | `` | Thêm bệnh nhân |
+| POST | `/import` | Import danh sách |
+| PUT | `/{patientId}` | Cập nhật |
+| DELETE | `/{patientId}` | Xóa 1 bệnh nhân |
+| DELETE | `` | Xóa nhiều (bulk) |
+| GET | `/export` | Export danh sách |
+| GET | `/{patientId}/history` | Lịch sử khám bệnh |
 
-### Medicines
+### Appointments (`/api/v1/appointments`)
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/medicines` | Danh sách thuốc |
-| POST | `/api/medicines` | Thêm thuốc |
-| PUT | `/api/medicines/{id}` | Cập nhật |
-| DELETE | `/api/medicines/{id}` | Xóa |
+| GET | `` | Danh sách lịch hẹn |
+| POST | `` | Tạo lịch hẹn |
+| PUT | `/{appointmentId}` | Cập nhật lịch hẹn |
+| PUT | `/{appointmentId}/status` | Cập nhật trạng thái |
+| GET | `/doctor` | Lịch hẹn của bác sĩ |
+| GET | `/{appointmentId}` | Chi tiết lịch hẹn |
+| GET | `/{appointmentId}/pdf` | Chi tiết lịch hẹn (PDF) |
+| GET | `/booked-slots` | Slots trống của bác sĩ |
 
-### Medical Services
+### Medical Records (`/api/v1/medical-records`)
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/medical-services` | Danh sách dịch vụ |
-| POST | `/api/medical-services` | Thêm dịch vụ |
-| PUT | `/api/medical-services/{id}` | Cập nhật |
-| DELETE | `/api/medical-services/{id}` | Xóa |
+| GET | `` | Danh sách hồ sơ |
+| POST | `` | Tạo hồ sơ |
+| PUT | `/{medicalRecordId}` | Cập nhật hồ sơ |
+| GET | `/{recordId}` | Chi tiết hồ sơ |
+| GET | `/{recordId}/pdf` | Chi tiết hồ sơ (PDF) |
+| GET | `/check` | Kiểm tra hồ sơ theo lịch hẹn |
 
-### Rooms
+### Prescriptions (`/api/v1/prescriptions`)
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/rooms` | Danh sách phòng |
-| POST | `/api/rooms` | Thêm phòng |
-| PUT | `/api/rooms/{id}` | Cập nhật |
-| DELETE | `/api/rooms/{id}` | Xóa |
+| POST | `` | Tạo toa thuốc |
+| GET | `/{recordId}` | Chi tiết toa thuốc |
 
-### Notifications
+### Prescription Items (`/api/v1/items`)
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/notifications` | Danh sách thông báo |
-| POST | `/api/notifications` | Gửi thông báo |
+| POST | `` | Thêm thuốc vào toa |
+| PUT | `/{itemId}/quantity` | Cập nhật số lượng |
+| PUT | `/{itemId}/dosage` | Cập nhật liều lượng |
+| DELETE | `/{itemId}` | Xóa thuốc khỏi toa |
 
-### Dashboard
+### Medicines (`/api/v1/medicines`)
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| GET | `/api/dashboard` | Thống kê tổng quan |
+| GET | `` | Danh sách thuốc |
+| POST | `` | Thêm thuốc (Admin) |
+| PUT | `/{medicineId}` | Cập nhật (Admin) |
+| DELETE | `/{medicineId}` | Xóa (Admin) |
+
+### Medical Services (`/api/v1/services`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `` | Danh sách dịch vụ (Admin) |
+| GET | `/options` | Danh sách options |
+| POST | `` | Thêm dịch vụ (Admin) |
+| PUT | `/{serviceId}` | Cập nhật (Admin) |
+| DELETE | `/{serviceId}` | Xóa (Admin) |
+
+### Categories (`/api/v1/categories`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `` | Danh sách danh mục (Admin) |
+| GET | `/options` | Danh sách options |
+| POST | `` | Tạo danh mục (Admin) |
+| PUT | `/{categoryId}` | Cập nhật (Admin) |
+| DELETE | `/{categoryId}` | Xóa (Admin) |
+
+### Rooms (`/api/v1/rooms`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `` | Danh sách phòng (Admin) |
+| GET | `/options` | Danh sách options |
+| POST | `` | Thêm phòng (Admin) |
+| PUT | `/{roomId}` | Cập nhật (Admin) |
+| PUT | `/is-active/{roomId}` | Cập nhật trạng thái (Admin) |
+| DELETE | `/{roomId}` | Xóa (Admin) |
+
+### Order Payments (`/api/v1/order-payments`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| POST | `` | Tạo hóa đơn thanh toán |
+| GET | `/{orderId}` | Chi tiết hóa đơn |
+
+### Record Files (`/api/v1/record-files`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| POST | `` | Upload file xét nghiệm |
+| GET | `/{recordId}` | Danh sách file của hồ sơ |
+| DELETE | `/{fileId}` | Xóa file |
+
+### Notifications (`/api/v1/notifications`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `` | Danh sách thông báo |
+| GET | `/total` | Tổng số thông báo |
+| PUT | `/{id}/read` | Đánh dấu đã đọc |
+| PUT | `/read-all` | Đánh dấu đã đọc tất cả |
+| DELETE | `/{id}` | Xóa thông báo |
+
+### Dashboard (`/api/v1/dashboard`)
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/today` | Thống kê hôm nay (Admin) |
+| GET | `/statistic` | Thống kê doanh thu (Admin) |
+| GET | `/top-medicine` | Top thuốc bán chạy (Admin) |
 
 ## Sơ đồ cơ sở dữ liệu
 
