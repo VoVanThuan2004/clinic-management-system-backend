@@ -208,5 +208,5 @@ Base path: `/api/v1`
 | GET | `/top-medicine` | Top thuốc bán chạy (Admin) |
 
 ## Sơ đồ cơ sở dữ liệu
+<img width="2784" height="1424" alt="Quản lý phòng khám" src="https://github.com/user-attachments/assets/93ac3030-5f26-4c3e-99c9-480fa92c8117" />
 
-_Đang cập nhật..._
