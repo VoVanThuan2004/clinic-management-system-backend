@@ -17,8 +17,6 @@ public class OrderPaymentMapper {
                 .totalMedicine(orderPaymentRequest.getTotalMedicine())
                 .totalAmount(orderPaymentRequest.getTotalAmount())
                 .paymentMethod(orderPaymentRequest.getPaymentMethod())
-                .paymentStatus(orderPaymentRequest.getPaymentMethod().equals(PaymentMethodConstant.CASH))
-                .paidAt(orderPaymentRequest.getPaymentMethod().equals(PaymentMethodConstant.CASH) ? Instant.now() : null)
                 .build();
     }
 
@@ -30,6 +28,7 @@ public class OrderPaymentMapper {
                 .totalAmount(orderPayment.getTotalAmount())
                 .paymentStatus(orderPayment.isPaymentStatus())
                 .paymentMethod(orderPayment.getPaymentMethod())
+                .status(orderPayment.getStatus())
                 .build();
     }
 }

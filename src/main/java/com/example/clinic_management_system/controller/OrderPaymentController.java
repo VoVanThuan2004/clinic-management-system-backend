@@ -30,9 +30,9 @@ public class OrderPaymentController {
     }
 
     // Lấy thông tin chi tiết hóa đơn
-    @GetMapping("/{orderId}")
-    public ResponseEntity<ApiResponse<OrderPaymentResponse>> getOrderPayment(@PathVariable String orderId) {
-        OrderPaymentResponse orderPaymentResponse = orderPaymentService.getOrderPayment(orderId);
+    @GetMapping("/{recordId}")
+    public ResponseEntity<ApiResponse<OrderPaymentResponse>> getOrderPayment(@PathVariable String recordId) {
+        OrderPaymentResponse orderPaymentResponse = orderPaymentService.getOrderPayment(recordId);
 
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<OrderPaymentResponse>builder()
                 .status("success")

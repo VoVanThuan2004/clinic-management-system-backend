@@ -7,5 +7,5 @@ import jakarta.validation.Valid;
 public interface OrderPaymentService {
     String createOrderPayment(@Valid OrderPaymentRequest orderPaymentRequest);
 
-    OrderPaymentResponse getOrderPayment(String orderId);
+    OrderPaymentResponse getOrderPayment(String recordId);
 }

@@ -14,5 +14,6 @@ public class OrderPaymentResponse {
     private Double totalMedicine;
     private Double totalAmount;
     private boolean paymentStatus;
+    private String status;
     private String paymentMethod;
 }
