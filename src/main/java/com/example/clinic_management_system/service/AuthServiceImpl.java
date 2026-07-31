@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.cli.Digest;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,18 +31,20 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtil jwtTokenUtil;
     private final RefreshTokenService refreshTokenService;
-    private final RefreshTokenRepository refreshTokenRepository;
+
+    @Value("${app.cookie.secure}")
+    private boolean cookieSecure;
 
     @Override
     public LoginResponse login(LoginRequest loginRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         Optional<User> user = userRepository.findByEmail(loginRequest.getEmail());
         if (user.isEmpty()) {
-            throw new BadRequestException("Email không hợp lệ");
+            throw new BadRequestException("Email hoặc mật khẩu không hợp lệ");
         }
 
         // Kiểm tra password
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.get().getPassword())) {
-            throw new BadRequestException("Mật khẩu không hợp lệ");
+            throw new BadRequestException("Email hoặc mật khẩu không hợp lệ");
         }
 
         // Tạo mã access token
@@ -92,22 +95,25 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logoutAccount(String refreshToken, HttpServletResponse response) {
-
-        // 1. Xóa cookie ở client
-        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(0)  // set maxAge=0 để xóa cookie
-                .sameSite("Lax")
-                .build();
-
-        response.setHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
-
+        System.out.println("Refresh token: " + refreshToken);
         // 2. Nếu không có refresh token -> throw lỗi
         if (refreshToken == null || refreshToken.isEmpty()) {
             throw new BadRequestException("Refresh token không hợp lệ");
         }
+
+
+        // 1. Xóa cookie ở client
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(0)  // set maxAge=0 để xóa cookie
+                .sameSite(cookieSecure ? "None" : "Lax")
+                .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
+
+
 
         TokenPayload tokenPayload = jwtTokenUtil.getTokenPayload(refreshToken);
 
@@ -158,8 +164,8 @@ public class AuthServiceImpl implements AuthService {
     private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
+                .secure(cookieSecure)
+                .sameSite(cookieSecure ? "None" : "Lax")
                 .path("/")
                 .maxAge(TokenConstants.REFRESH_TOKEN_EXPIRATION)
                 .build();
