@@ -17,4 +17,5 @@ public class NotificationResponse {
     private String message;
     private boolean isRead;
     private Instant createdAt;
+    private Instant appointmentTime;
 }

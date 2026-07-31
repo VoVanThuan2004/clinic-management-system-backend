@@ -25,6 +25,8 @@ public class Notification {
     @CreationTimestamp
     private Instant createdAt;
 
+    private Instant appointmentTime;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId")
     private User user;

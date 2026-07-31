@@ -17,6 +17,7 @@ public class NotificationMapper {
                 .message(notification.getMessage())
                 .isRead(notification.isRead())
                 .createdAt(notification.getCreatedAt())
+                .appointmentTime(notification.getAppointmentTime())
                 .build();
     }
 

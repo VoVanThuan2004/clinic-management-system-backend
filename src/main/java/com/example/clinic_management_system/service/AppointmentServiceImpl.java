@@ -98,7 +98,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         Notification notification = notificationRepository.save(Notification.builder()
                         .type("APPOINTMENT_CREATED")
                         .title("Lịch hẹn mới")
-                        .message("Bệnh nhấn: " + patientExist.get().getFullName())
+                        .message("Bệnh nhân: " + patientExist.get().getFullName())
+                        .appointmentTime(appointment.getStartTime())
                         .user(doctorExist.get())
                 .build());
 
@@ -112,6 +113,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                         .message(notification.getMessage())
                         .isRead(notification.isRead())
                         .createdAt(Instant.now())
+                        .appointmentTime(appointment.getStartTime())
                         .build()
         );
     }
